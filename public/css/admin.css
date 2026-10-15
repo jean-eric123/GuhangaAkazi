@@ -1,0 +1,262 @@
+/* ===========================================================
+   GuhangaAkazi Admin Panel — Stylesheet
+   Brand color: #0B6B4F
+   =========================================================== */
+
+:root {
+    --brand:        #0B6B4F;
+    --brand-dark:   #095c43;
+    --brand-light:  #e6f2ee;
+    --sidebar-bg:   #0d1f1a;
+    --sidebar-hover:#16332c;
+    --sidebar-text: #cbd5d0;
+    --sidebar-act:  #ffffff;
+    --page-bg:      #f1f5f4;
+    --card-bg:      #ffffff;
+    --text:         #1e293b;
+    --text-muted:   #64748b;
+    --border:       #e2e8f0;
+    --success:      #059669;
+    --warning:      #d97706;
+    --danger:       #dc2626;
+}
+
+* { box-sizing: border-box; }
+
+body.admin {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ---------- Layout Grid ---------- */
+.admin-wrap {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 240px;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform .25s ease;
+    z-index: 50;
+}
+
+.admin-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar-brand {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    text-decoration: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.5px;
+    display: block;
+}
+.sidebar-brand small {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--sidebar-text);
+    letter-spacing: 0;
+    margin-top: 2px;
+}
+
+.sidebar-nav {
+    padding: 0.75rem 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    padding: 0.75rem 1rem 0.35rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7d76;
+    font-weight: 600;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent;
+    transition: background .15s, color .15s;
+}
+.sidebar-link:hover {
+    background: var(--sidebar-hover);
+    color: var(--sidebar-act);
+}
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: var(--sidebar-act);
+    border-left-color: var(--brand);
+    font-weight: 600;
+}
+.sidebar-link .ico {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke-width: 1.8;
+}
+
+/* ---------- Header ---------- */
+.admin-header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: 0;
+    padding: 0.4rem;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 6px;
+}
+.menu-toggle:hover { background: var(--page-bg); }
+
+.header-title {
+    flex: 1;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.header-user strong { color: var(--text); font-weight: 600; }
+
+.logout-btn {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.logout-btn:hover { background: var(--page-bg); }
+
+/* ---------- Content ---------- */
+.admin-content {
+    padding: 1.5rem 1rem;
+    flex: 1;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+@media (min-width: 900px) {
+    .admin-content { padding: 2rem; }
+}
+
+/* ---------- Page title ---------- */
+.page-title {
+    margin: 0 0 1.25rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+}
+.page-subtitle {
+    margin: -0.75rem 0 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* ---------- Stat cards ---------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.stat-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--brand);
+    line-height: 1;
+}
+.stat-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* ---------- Alerts ---------- */
+.alert {
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+.alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.alert-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 899px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 20px rgba(0,0,0,.2);
+    }
+    .admin-sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: inline-flex; }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.4);
+        z-index: 45;
+    }
+    .sidebar-backdrop.open { display: block; }
+}

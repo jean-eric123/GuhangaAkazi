@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\Auth\LoginController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | GuhangaAkazi Admin Routes
 |--------------------------------------------------------------------------
-| All routes here are prefixed with /admin and named with "admin."
+| Prefixed with /admin, named with "admin."
 |--------------------------------------------------------------------------
 */
 
@@ -25,8 +26,5 @@ Route::middleware('admin')->group(function () {
         return redirect()->route('admin.dashboard');
     })->name('home');
 
-    Route::get('dashboard', function () {
-        return 'Dashboard coming in Step 32. Logged in as: '
-            . auth('admin')->user()->email;
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
