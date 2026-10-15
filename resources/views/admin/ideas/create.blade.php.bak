@@ -1,0 +1,206 @@
+@extends('admin.layouts.app')
+
+@section('title', 'New Business Idea')
+@section('page_title', 'New Business Idea')
+
+@section('content')
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem">
+        <div>
+            <h2 class="page-title" style="margin-bottom:.25rem">New Business Idea</h2>
+            <p class="page-subtitle" style="margin:0">Write the idea in English and Kinyarwanda — or write in one and auto-translate.</p>
+        </div>
+        <a href="{{ route('admin.ideas.index') }}" style="color:var(--text-muted); text-decoration:none; font-size:.9rem">← Back to list</a>
+    </div>
+
+    <form method="POST" action="{{ route('admin.ideas.store') }}" style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.25rem">
+        @csrf
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.25rem">
+            <div>
+                <label for="slug" style="display:block; font-weight:600; font-size:.85rem; margin-bottom:.3rem">Slug (URL)</label>
+                <input id="slug" name="slug" type="text" value="{{ old('slug') }}" required placeholder="e.g. ubuhinzi-bw-inkoko" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+                <small style="color:var(--text-muted); font-size:.75rem">Lowercase letters, numbers, dashes only.</small>
+            </div>
+            <div>
+                <label for="category_id" style="display:block; font-weight:600; font-size:.85rem; margin-bottom:.3rem">Category</label>
+                <select id="category_id" name="category_id" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+                    <option value="">— none —</option>
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}" @selected(old('category_id') == $cat->id)>{{ $cat->translation()?->name ?? $cat->slug }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <h3 style="margin:1.25rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--brand)">What the reader needs and can earn</h3>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.25rem">
+            <div>
+                <label for="capital" style="display:block; font-weight:600; font-size:.85rem; margin-bottom:.3rem">Starting capital</label>
+                <input id="capital" name="capital" type="number" step="0.01" min="0" value="{{ old('capital') }}" placeholder="e.g. 50000" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+            </div>
+            <div>
+                <label for="expected_profit" style="display:block; font-weight:600; font-size:.85rem; margin-bottom:.3rem">Expected profit</label>
+                <input id="expected_profit" name="expected_profit" type="number" step="0.01" value="{{ old('expected_profit') }}" placeholder="e.g. 100000" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+            </div>
+            <div>
+                <label for="currency" style="display:block; font-weight:600; font-size:.85rem; margin-bottom:.3rem">Currency</label>
+                <input id="currency" name="currency" type="text" value="{{ old('currency', 'RWF') }}" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+            </div>
+        </div>
+
+        <div style="margin:1.5rem 0 .5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; flex-wrap:wrap; gap:.5rem">
+            <button type="button" data-lang-tab="en" style="background:none; border:0; padding:.6rem 1rem; font-weight:600; cursor:pointer; border-bottom:2px solid var(--brand); color:var(--brand)">English</button>
+            <button type="button" data-lang-tab="rw" style="background:none; border:0; padding:.6rem 1rem; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; color:var(--text-muted)">Kinyarwanda</button>
+            <span style="flex:1"></span>
+            <button type="button" id="btnTranslate" data-from="en" data-to="rw" style="background:var(--brand-light); color:var(--brand); border:1px solid var(--brand); padding:.4rem .8rem; border-radius:6px; font-size:.85rem; font-weight:600; cursor:pointer">🌐 Auto-translate EN → RW</button>
+        </div>
+
+        <div data-lang-panel="en">
+            @include('admin.ideas.partials.translation-fields', ['prefix' => 'en', 'values' => old()])
+        </div>
+
+        <div data-lang-panel="rw" style="display:none">
+            @include('admin.ideas.partials.translation-fields', ['prefix' => 'rw', 'values' => old()])
+        </div>
+
+        <details style="margin:1.5rem 0 0; background:var(--page-bg); border-radius:8px; padding:.75rem">
+            <summary style="cursor:pointer; font-weight:600; font-size:.85rem">Admin notes (private — not shown to readers)</summary>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:.75rem">
+                <div>
+                    <label for="operating_costs" style="display:block; font-weight:600; font-size:.8rem; margin-bottom:.25rem">Operating costs</label>
+                    <input id="operating_costs" name="operating_costs" type="number" step="0.01" value="{{ old('operating_costs') }}" style="width:100%; padding:.5rem .7rem; border:1px solid var(--border); border-radius:8px">
+                </div>
+                <div>
+                    <label for="expected_revenue" style="display:block; font-weight:600; font-size:.8rem; margin-bottom:.25rem">Expected revenue</label>
+                    <input id="expected_revenue" name="expected_revenue" type="number" step="0.01" value="{{ old('expected_revenue') }}" style="width:100%; padding:.5rem .7rem; border:1px solid var(--border); border-radius:8px">
+                </div>
+                <div>
+                    <label for="difficulty_level" style="display:block; font-weight:600; font-size:.8rem; margin-bottom:.25rem">Difficulty</label>
+                    <select id="difficulty_level" name="difficulty_level" style="width:100%; padding:.5rem .7rem; border:1px solid var(--border); border-radius:8px">
+                        <option value="">—</option>
+                        <option value="easy"   @selected(old('difficulty_level') === 'easy')>Easy</option>
+                        <option value="medium" @selected(old('difficulty_level') === 'medium')>Medium</option>
+                        <option value="hard"   @selected(old('difficulty_level') === 'hard')>Hard</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="time_to_start" style="display:block; font-weight:600; font-size:.8rem; margin-bottom:.25rem">Time to start</label>
+                    <input id="time_to_start" name="time_to_start" type="text" value="{{ old('time_to_start') }}" placeholder="e.g. 2 weeks" style="width:100%; padding:.5rem .7rem; border:1px solid var(--border); border-radius:8px">
+                </div>
+            </div>
+        </details>
+
+        <h3 style="margin:1.5rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted)">Cover image</h3>
+        <input id="cover_image" name="cover_image" type="text" value="{{ old('cover_image') }}" placeholder="https://... (file upload coming soon)" style="width:100%; padding:.55rem .8rem; border:1px solid var(--border); border-radius:8px">
+
+        <h3 style="margin:1.5rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted)">Publishing</h3>
+        <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem; font-size:.9rem">
+            <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured'))> Feature on Home Page
+        </label>
+        <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:1.25rem; font-size:.9rem">
+            <input type="checkbox" name="is_published" value="1" @checked(old('is_published'))> Publish immediately
+        </label>
+
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; padding-top:1rem; border-top:1px solid var(--border)">
+            <button type="submit" style="background:var(--brand); color:#fff; border:0; padding:.7rem 1.25rem; border-radius:8px; font-weight:600; cursor:pointer">Save Idea</button>
+            <a href="{{ route('admin.ideas.index') }}" style="padding:.7rem 1.25rem; border:1px solid var(--border); border-radius:8px; text-decoration:none; color:var(--text); font-weight:600">Cancel</a>
+        </div>
+    </form>
+
+    <script>
+    (function () {
+        var tabs = document.querySelectorAll('[data-lang-tab]');
+        var panels = document.querySelectorAll('[data-lang-panel]');
+        var btn = document.getElementById('btnTranslate');
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                var lang = tab.getAttribute('data-lang-tab');
+                tabs.forEach(function (t) {
+                    var active = t === tab;
+                    t.style.borderBottomColor = active ? 'var(--brand)' : 'transparent';
+                    t.style.color = active ? 'var(--brand)' : 'var(--text-muted)';
+                });
+                panels.forEach(function (p) {
+                    p.style.display = p.getAttribute('data-lang-panel') === lang ? '' : 'none';
+                });
+                if (btn) {
+                    if (lang === 'rw') {
+                        btn.setAttribute('data-from', 'en');
+                        btn.setAttribute('data-to', 'rw');
+                        btn.textContent = '🌐 Auto-translate EN → RW';
+                    } else {
+                        btn.setAttribute('data-from', 'rw');
+                        btn.setAttribute('data-to', 'en');
+                        btn.textContent = '🌐 Auto-translate RW → EN';
+                    }
+                }
+            });
+        });
+
+        var FIELDS = ['title','short_description','full_description','steps','requirements','tips'];
+
+        if (btn) {
+            btn.addEventListener('click', function () {
+                var from = btn.getAttribute('data-from');
+                var to   = btn.getAttribute('data-to');
+                var payload = {};
+                FIELDS.forEach(function (f) {
+                    var el = document.getElementById(from + '_' + f);
+                    if (el && el.value.trim() !== '') { payload[f] = el.value; }
+                });
+                if (Object.keys(payload).length === 0) {
+                    alert('Please fill at least one ' + from.toUpperCase() + ' field first.');
+                    return;
+                }
+
+                var hasExisting = FIELDS.some(function (f) {
+                    var el = document.getElementById(to + '_' + f);
+                    return el && el.value.trim() !== '';
+                });
+                if (hasExisting) {
+                    if (! confirm('Some ' + to.toUpperCase() + ' fields already have content. Fill only empty fields?')) {
+                        return;
+                    }
+                }
+
+                btn.disabled = true;
+                var originalText = btn.textContent;
+                btn.textContent = '⏳ Translating...';
+
+                fetch('{{ route('admin.translate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ from: from, to: to, fields: payload })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (! data.ok) { throw new Error(data.error || 'Translation failed'); }
+                    var filled = 0, skipped = 0;
+                    FIELDS.forEach(function (f) {
+                        if (! data.fields[f]) return;
+                        var el = document.getElementById(to + '_' + f);
+                        if (! el) return;
+                        if (el.value.trim() !== '' && hasExisting) { skipped++; return; }
+                        el.value = data.fields[f];
+                        filled++;
+                    });
+                    alert('✅ Filled ' + filled + ' field(s)' + (skipped ? ', skipped ' + skipped + ' existing' : '') + '. Please review before saving.');
+                })
+                .catch(function (err) {
+                    alert('⚠️ Translation failed: ' + err.message + '. Please translate manually.');
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                });
+            });
+        }
+    })();
+    </script>
+@endsection
