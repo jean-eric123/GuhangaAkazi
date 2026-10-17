@@ -11,28 +11,41 @@ class Idea extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'category_id', 'slug', 'cover_image',
-        'capital_min', 'capital_max', 'operating_costs',
-        'expected_revenue', 'expected_profit', 'currency',
-        'difficulty_level', 'time_to_start',
-        'is_featured', 'is_published', 'published_at',
-        'views_count', 'likes_count', 'comments_count',
+        'category_id',
+        'slug',
+        'cover_image',
+        'capital',
+        'capital_min',
+        'capital_max',
+        'operating_costs',
+        'expected_revenue',
+        'expected_profit',
+        'currency',
+        'difficulty_level',
+        'time_to_start',
+        'is_featured',
+        'is_published',
+        'published_at',
+        'views_count',
+        'likes_count',
+        'comments_count',
         'sort_order',
     ];
 
     protected $casts = [
-        'capital_min'        => 'decimal:2',
-        'capital_max'        => 'decimal:2',
-        'operating_costs'    => 'decimal:2',
-        'expected_revenue'   => 'decimal:2',
-        'expected_profit'    => 'decimal:2',
-        'is_featured'        => 'boolean',
-        'is_published'       => 'boolean',
-        'published_at'       => 'datetime',
-        'views_count'        => 'integer',
-        'likes_count'        => 'integer',
-        'comments_count'     => 'integer',
-        'sort_order'         => 'integer',
+        'capital'          => 'decimal:2',
+        'capital_min'      => 'decimal:2',
+        'capital_max'      => 'decimal:2',
+        'operating_costs'  => 'decimal:2',
+        'expected_revenue' => 'decimal:2',
+        'expected_profit'  => 'decimal:2',
+        'is_featured'      => 'boolean',
+        'is_published'     => 'boolean',
+        'published_at'     => 'datetime',
+        'views_count'      => 'integer',
+        'likes_count'      => 'integer',
+        'comments_count'   => 'integer',
+        'sort_order'       => 'integer',
     ];
 
     public function category()
@@ -48,7 +61,6 @@ class Idea extends Model
     public function translation(?string $locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-
         return $this->translations->firstWhere('locale', $locale)
             ?? $this->translations->firstWhere('locale', 'en');
     }

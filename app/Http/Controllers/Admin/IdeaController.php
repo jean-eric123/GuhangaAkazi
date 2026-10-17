@@ -47,6 +47,7 @@ class IdeaController extends Controller
 
     public function store(Request $request)
     {
+        file_put_contents(storage_path('logs/idea-debug.log'), date('H:i:s') . ' REQUEST: ' . json_encode($request->only(['slug','capital','expected_profit','currency'])) . PHP_EOL, FILE_APPEND);
         $data = $this->validateIdea($request);
         $slug = $this->makeUniqueSlug($data['slug'] ?? '', $data['en_title'] ?? '', null);
 
@@ -165,8 +166,8 @@ class IdeaController extends Controller
             'slug'              => ['nullable', 'string', 'max:191'],
             'category_id'       => ['nullable', 'integer', 'exists:categories,id'],
             'cover_image'       => ['nullable', 'string', 'max:500'],
-            'capital'           => ['nullable', 'numeric', 'min:0'],
-            'expected_profit'   => ['nullable', 'numeric'],
+            'capital'           => ['nullable', 'numeric', 'min:0', 'max:999999999999999999'],
+            'expected_profit'   => ['nullable', 'numeric', 'max:999999999999999999'],
             'currency'          => ['nullable', 'string', 'max:10'],
             'difficulty_level'  => ['nullable', 'in:easy,medium,hard'],
             'time_to_start'     => ['nullable', 'string', 'max:191'],

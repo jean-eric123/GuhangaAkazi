@@ -31,7 +31,19 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr))">
+    
+    @if ($idea->cover_image)
+        <div style="margin-bottom:1.5rem; background:#fff; border:1px solid var(--border); border-radius:12px; padding:1rem">
+            <h3 style="margin:0 0 .5rem; font-size:.95rem">Cover image</h3>
+            <img
+                src="{{ $idea->cover_image
+    ? (preg_match("#^https?://#i", $idea->cover_image) ? $idea->cover_image : asset("storage/" . ltrim($idea->cover_image, "/")))
+    : null }}"
+                alt="{{ $idea->slug }} cover"
+                style="width:100%; max-width:480px; height:auto; border-radius:8px; border:1px solid var(--border)">
+        </div>
+    @endif
+<div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr))">
         <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:1rem">
             <h3 style="margin:0 0 .5rem; font-size:.95rem">Public info</h3>
             <p style="margin:.25rem 0"><strong>Starting capital:</strong> {{ $idea->capital ? number_format($idea->capital, 0) . ' ' . $idea->currency : '—' }}</p>

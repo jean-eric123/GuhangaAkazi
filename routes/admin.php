@@ -41,3 +41,11 @@ Route::middleware('admin')->group(function () {
         })->name($slug);
     }
 });
+
+use App\Http\Controllers\Admin\MediaController;
+
+Route::middleware('admin')->group(function () {
+    Route::post('media/cover', [MediaController::class, 'uploadCover'])
+        ->middleware('throttle:60,1')
+        ->name('media.cover');
+});
