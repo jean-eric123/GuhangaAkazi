@@ -168,10 +168,9 @@
         <div style="background:var(--page-bg); border-radius:8px; padding:1rem">
             <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:flex-start">
                 <div style="flex-shrink:0">
-                    <img id="coverPreview" src="{{ $previewUrl ?? '' }}" alt="cover preview"
-                         style="width:180px; height:180px; object-fit:cover; border-radius:8px; border:1px solid var(--border); background:#fff; {{ $previewUrl ? '' : 'display:none' }}">
+                    <img id="coverPreview" src="{{ $previewUrl ?? '' }}" alt="cover preview" style="width:160px; height:160px; object-fit:cover; border-radius:8px; border:1px solid var(--border); background:#fff; {{ $previewUrl ? '' : 'display:none' }}">
                     <div id="coverPlaceholder"
-                         style="width:180px; height:180px; border-radius:8px; border:1px dashed var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:.85rem; background:#fff; {{ $previewUrl ? 'display:none' : '' }}">
+                         style="width:100%; max-width:180px; aspect-ratio:1/1; border-radius:8px; border:1px dashed var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:.85rem; background:#fff; {{ $previewUrl ? 'display:none' : '' }}">
                         No image
                     </div>
                 </div>
@@ -205,7 +204,28 @@
         </div>
 
         {{-- Publishing --}}
-        <h3 style="margin:1.5rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted)">Publishing</h3>
+        
+        {{-- Additional photos --}}
+        <h3 style="margin:1.5rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted)">Additional photos</h3>
+
+        <div style="background:var(--page-bg); border-radius:8px; padding:1rem">
+            <div id="additionalPhotosGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:.75rem; margin-bottom:.75rem"></div>
+
+            <input type="file" id="additionalPhotosInput" accept="image/*" multiple style="display:none">
+
+            <button type="button" id="additionalPhotosPick"
+                    style="background:var(--brand); color:#fff; border:0; padding:.55rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; font-size:.85rem">
+                📷 Add photos
+            </button>
+
+            <span id="additionalPhotosStatus" style="margin-left:.75rem; font-size:.8rem; color:var(--text-muted)"></span>
+            <div id="photo_ids_holder"></div>
+
+            <div style="font-size:.75rem; color:var(--text-muted); margin-top:.5rem">
+                You can select multiple photos at once. JPG, PNG, WEBP, GIF, BMP, SVG, HEIC, AVIF — max 10 MB each.
+            </div>
+        </div>
+<h3 style="margin:1.5rem 0 .75rem; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted)">Publishing</h3>
         <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem; font-size:.9rem">
             <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $idea?->is_featured))> Feature on Home Page
         </label>
@@ -295,4 +315,126 @@
         }
     })();
     </script>
+
+    
+<!-- PHOTO_UPLOAD_SCRIPT -->
+<script>
+(function () {
+    "use strict";
+
+    function initPhotoUpload() {
+        var photoInput  = document.getElementById("additionalPhotosInput");
+        var photoPick   = document.getElementById("additionalPhotosPick");
+        var photoGrid   = document.getElementById("additionalPhotosGrid");
+        var photoStatus = document.getElementById("additionalPhotosStatus");
+        var photoHolder = document.getElementById("photo_ids_holder");
+
+        if (!photoInput || !photoPick || !photoGrid) return;
+
+        // Make sure the button is enabled
+        photoPick.disabled = false;
+        photoPick.removeAttribute("disabled");
+        photoPick.style.cursor = "pointer";
+
+        // Prevent double-binding
+        if (photoPick.dataset.bound === "1") return;
+        photoPick.dataset.bound = "1";
+
+        photoPick.addEventListener("click", function (e) {
+            e.preventDefault();
+            photoInput.click();
+        });
+
+        photoInput.addEventListener("change", function () {
+            if (!photoInput.files || photoInput.files.length === 0) return;
+
+            var fd = new FormData();
+            for (var i = 0; i < photoInput.files.length; i++) {
+                fd.append("files[]", photoInput.files[i]);
+            }
+
+            var token = document.querySelector("meta[name=\"csrf-token\"]").content;
+
+            photoStatus.textContent = "⏳ Uploading...";
+            photoStatus.style.color = "var(--text-muted)";
+
+            fetch("/admin/media/photos", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRF-TOKEN": token,
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: fd
+            })
+            .then(function (r) {
+                return r.text().then(function (t) {
+                    var d;
+                    try { d = JSON.parse(t); }
+                    catch (e) { d = { ok: false, error: "Server: " + t.slice(0, 200) }; }
+                    return { status: r.status, ok: r.ok, data: d };
+                });
+            })
+            .then(function (res) {
+                if (res.status === 419) {
+                    alert("Session expired. Reloading...");
+                    window.location.reload();
+                    return;
+                }
+                if (!res.ok || !res.data.ok) {
+                    throw new Error((res.data && (res.data.message || res.data.error)) || ("HTTP " + res.status));
+                }
+
+                res.data.photos.forEach(function (p) {
+                    // Add hidden photo id
+                    if (photoHolder) {
+                        var hidden = document.createElement("input");
+                        hidden.type = "hidden";
+                        hidden.name = "photo_ids[]";
+                        hidden.value = p.id;
+                        hidden.setAttribute("data-photo-id", p.id);
+                        photoHolder.appendChild(hidden);
+                    }
+
+                    // Add thumbnail card
+                    var card = document.createElement("div");
+                    card.style.cssText = "background:#fff; border:1px solid var(--border); border-radius:8px; overflow:hidden; position:relative";
+                    card.innerHTML =
+                        "<img src=\"" + p.url + "\" alt=\"" + p.name + "\" style=\"width:100%; width:100%; height:auto; aspect-ratio:1/1; object-fit:cover; display:block\">" +
+                        "<button type=\"button\" data-photo-id=\"" + p.id + "\" style=\"position:absolute; top:4px; right:4px; background:#dc2626; color:#fff; border:0; width:22px; height:22px; border-radius:50%; font-size:.7rem; cursor:pointer; line-height:1\">×</button>";
+                    photoGrid.appendChild(card);
+                });
+
+                photoStatus.textContent = "✅ Uploaded " + res.data.photos.length + " photo(s)";
+                photoStatus.style.color = "#059669";
+            })
+            .catch(function (err) {
+                photoStatus.textContent = "⚠️ " + err.message;
+                photoStatus.style.color = "#dc2626";
+            })
+            .then(function () {
+                photoInput.value = "";
+            });
+        });
+
+        photoGrid.addEventListener("click", function (e) {
+            if (e.target && e.target.matches("[data-photo-id]")) {
+                var pid = e.target.getAttribute("data-photo-id");
+                e.target.closest("div").remove();
+                if (photoHolder) {
+                    var inputs = photoHolder.querySelectorAll("input[data-photo-id=\"" + pid + "\"]");
+                    inputs.forEach(function (el) { el.remove(); });
+                }
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPhotoUpload);
+    } else {
+        initPhotoUpload();
+    }
+})();
+</script>
 @endsection

@@ -47,7 +47,6 @@ class IdeaController extends Controller
 
     public function store(Request $request)
     {
-        file_put_contents(storage_path('logs/idea-debug.log'), date('H:i:s') . ' REQUEST: ' . json_encode($request->only(['slug','capital','expected_profit','currency'])) . PHP_EOL, FILE_APPEND);
         $data = $this->validateIdea($request);
         $slug = $this->makeUniqueSlug($data['slug'] ?? '', $data['en_title'] ?? '', null);
 
@@ -65,6 +64,8 @@ class IdeaController extends Controller
                 'requirements'      => $data['en_requirements'] ?? null,
                 'tips'              => $data['en_tips'] ?? null,
             ]);
+
+            $this->attachPhotos($idea, $request);
         });
 
         return redirect()->route('admin.ideas.create')
@@ -74,7 +75,15 @@ class IdeaController extends Controller
     public function show(Idea $idea)
     {
         $idea->load(['category.translations', 'translations']);
-        return view('admin.ideas.show', compact('idea'));
+        $photos = DB::table('photo_attachments')
+            ->join('photos', 'photos.id', '=', 'photo_attachments.photo_id')
+            ->where('photo_attachments.attachable_type', Idea::class)
+            ->where('photo_attachments.attachable_id', $idea->id)
+            ->select('photos.*')
+            ->orderBy('photo_attachments.sort_order')
+            ->get();
+
+        return view('admin.ideas.show', compact('idea', 'photos'));
     }
 
     public function edit(Idea $idea)
@@ -82,10 +91,21 @@ class IdeaController extends Controller
         $idea->load(['category.translations', 'translations']);
         $categories = Category::with('translations')->where('type', 'idea')->orderBy('sort_order')->get();
         $en = $idea->translations->firstWhere('locale', 'en');
+
+        // Existing photos for this idea
+        $photos = DB::table('photo_attachments')
+            ->join('photos', 'photos.id', '=', 'photo_attachments.photo_id')
+            ->where('photo_attachments.attachable_type', Idea::class)
+            ->where('photo_attachments.attachable_id', $idea->id)
+            ->select('photos.id', 'photos.file_path')
+            ->orderBy('photo_attachments.sort_order')
+            ->get();
+
         return response()->view('admin.ideas.form', [
             'categories' => $categories,
             'idea'       => $idea,
             'en'         => $en,
+            'existingPhotos' => $photos,
         ])->withHeaders(['Cache-Control' => 'no-store']);
     }
 
@@ -97,6 +117,7 @@ class IdeaController extends Controller
         DB::transaction(function () use ($idea, $data, $request, $slug) {
             $this->fillIdea($idea, $data, $request, $slug);
             $idea->save();
+
             $idea->translations()->updateOrCreate(
                 ['locale' => 'en'],
                 [
@@ -108,6 +129,8 @@ class IdeaController extends Controller
                     'tips'              => $data['en_tips'] ?? null,
                 ]
             );
+
+            $this->attachPhotos($idea, $request);
         });
 
         return redirect()->route('admin.ideas.show', $idea)
@@ -117,6 +140,12 @@ class IdeaController extends Controller
     public function destroy(Idea $idea)
     {
         DB::transaction(function () use ($idea) {
+            // Remove attachments (photos stay in the media library)
+            DB::table('photo_attachments')
+                ->where('attachable_type', Idea::class)
+                ->where('attachable_id', $idea->id)
+                ->delete();
+
             $idea->delete();
         });
 
@@ -138,6 +167,8 @@ class IdeaController extends Controller
         $idea->save();
         return back()->with('success', $idea->is_featured ? 'Idea featured.' : 'Idea unfeatured.');
     }
+
+    /* ------------------------------------------------------------------ */
 
     protected function fillIdea(Idea $idea, array $data, Request $request, string $slug): void
     {
@@ -166,8 +197,8 @@ class IdeaController extends Controller
             'slug'              => ['nullable', 'string', 'max:191'],
             'category_id'       => ['nullable', 'integer', 'exists:categories,id'],
             'cover_image'       => ['nullable', 'string', 'max:500'],
-            'capital'           => ['nullable', 'numeric', 'min:0', 'max:999999999999999999'],
-            'expected_profit'   => ['nullable', 'numeric', 'max:999999999999999999'],
+            'capital'           => ['nullable', 'numeric', 'min:0'],
+            'expected_profit'   => ['nullable', 'numeric'],
             'currency'          => ['nullable', 'string', 'max:10'],
             'difficulty_level'  => ['nullable', 'in:easy,medium,hard'],
             'time_to_start'     => ['nullable', 'string', 'max:191'],
@@ -181,6 +212,8 @@ class IdeaController extends Controller
             'en_steps'             => ['nullable', 'string'],
             'en_requirements'      => ['nullable', 'string'],
             'en_tips'              => ['nullable', 'string'],
+            'photo_ids'            => ['nullable', 'array'],
+            'photo_ids.*'          => ['integer', 'exists:photos,id'],
         ]);
     }
 
@@ -201,5 +234,29 @@ class IdeaController extends Controller
             $candidate = $base . '-' . $i;
         }
         return $candidate;
+    }
+
+    protected function attachPhotos(Idea $idea, Request $request): void
+    {
+        $ids = $request->input('photo_ids', []);
+        if (! is_array($ids) || empty($ids)) return;
+
+        foreach ($ids as $index => $photoId) {
+            $photoId = (int) $photoId;
+            if ($photoId <= 0) continue;
+
+            DB::table('photo_attachments')->updateOrInsert(
+                [
+                    'photo_id'        => $photoId,
+                    'attachable_type' => Idea::class,
+                    'attachable_id'   => $idea->id,
+                ],
+                [
+                    'sort_order' => $index,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
     }
 }

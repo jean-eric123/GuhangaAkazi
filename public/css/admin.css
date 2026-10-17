@@ -260,3 +260,220 @@ body.admin {
     }
     .sidebar-backdrop.open { display: block; }
 }
+
+/* ===========================================================
+   Responsive fixes — never allow horizontal scrolling
+   =========================================================== */
+
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.admin-wrap,
+.admin-main,
+.admin-content {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+/* All images responsive by default */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Tables — allow horizontal scroll INSIDE the table wrapper only */
+.admin-content table {
+    max-width: 100%;
+}
+
+.admin-content > div > div[style*="overflow-x"] {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Cards & grids — never overflow */
+.admin-content div,
+.admin-content section,
+.admin-content main {
+    min-width: 0;
+}
+
+/* Cover image on show page — limit to viewport */
+.admin-content > div > div > img,
+.admin-content img[alt*="cover"] {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Photo gallery grid — always fit within viewport */
+.admin-content div[style*="grid-template-columns"] {
+    max-width: 100%;
+}
+
+/* Long words and URLs should wrap, not overflow */
+.admin-content p,
+.admin-content td,
+.admin-content li,
+.admin-content h1,
+.admin-content h2,
+.admin-content h3,
+.admin-content code {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+/* On very small screens, shrink cover and thumbnails */
+@media (max-width: 480px) {
+    .admin-content {
+        padding: 1rem .75rem;
+    }
+    .admin-content img[alt*="cover"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    .admin-content h2.page-title {
+        font-size: 1.15rem;
+    }
+    .admin-content h3 {
+        font-size: .9rem;
+    }
+    .admin-content table {
+        font-size: .82rem;
+    }
+}
+
+/* ===========================================================
+   Professional photo gallery
+   =========================================================== */
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: .75rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.gallery-item {
+    position: relative;
+    display: block;
+    background: #f1f5f4;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: transform .2s ease, box-shadow .2s ease;
+    cursor: pointer;
+    border: 1px solid var(--border, #e2e8f0);
+    aspect-ratio: 1 / 1;
+}
+
+.gallery-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.65), transparent);
+    color: #fff;
+    padding: .5rem .6rem .4rem;
+    font-size: .72rem;
+    font-weight: 600;
+    text-align: left;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Lightbox overlay */
+.gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.gallery-lightbox.open {
+    display: flex;
+}
+
+.gallery-lightbox img {
+    max-width: 96vw;
+    max-height: 92vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
+    object-fit: contain;
+}
+
+.gallery-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #fff;
+    color: #111;
+    border: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.gallery-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,.9);
+    color: #111;
+    border: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.gallery-lightbox-prev { left: 1rem; }
+.gallery-lightbox-next { right: 1rem; }
+
+/* Small phone tweaks */
+@media (max-width: 480px) {
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: .5rem;
+    }
+}

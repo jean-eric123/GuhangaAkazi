@@ -49,3 +49,9 @@ Route::middleware('admin')->group(function () {
         ->middleware('throttle:60,1')
         ->name('media.cover');
 });
+
+Route::middleware('admin')->group(function () {
+    Route::post('media/photos', [App\Http\Controllers\Admin\MediaController::class, 'uploadPhotos'])
+        ->middleware('throttle:30,1')
+        ->name('media.photos');
+});
