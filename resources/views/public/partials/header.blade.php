@@ -27,7 +27,12 @@
 
             {{-- Nav --}}
             <nav class="pub-nav" id="pubNav">
-                <a href="{{ url('/') }}">Home</a>
+                <a href="{{ url('/') }}" class="nav-icon-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>
+                    </svg>
+                    Home
+                </a>
                 <a href="{{ route('public.ideas') }}">Ideas</a>
                 <a href="{{ route('public.skills') }}">Skills</a>
                 <a href="{{ route('public.opportunities') }}">Opportunities</a>

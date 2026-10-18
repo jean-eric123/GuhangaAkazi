@@ -276,3 +276,15 @@ img { max-width: 100%; height: auto; display: block; }
         font-size: 0.95rem !important;
     }
 }
+
+/* ---------- Home icon alignment ---------- */
+.nav-icon-link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: .35rem;
+    white-space: nowrap !important;
+}
+.nav-icon-link svg {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
