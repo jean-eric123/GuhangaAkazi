@@ -34,12 +34,16 @@ class VideoController extends Controller
         $path = $file->storeAs('media/videos', $filename, 'public');
 
         $video = Video::create([
-            'title' => $request->title,
-            'file_path' => $path,
+                        'file_path' => $path,
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'is_published' => $request->boolean('is_published', true),
             'is_featured' => $request->boolean('is_featured', false),
+        ]);
+
+        $video->translations()->create([
+            'locale' => 'en',
+            'title' => $request->title,
         ]);
 
         return redirect()->route('admin.videos.index')->with('success', 'Video uploaded.');
@@ -63,8 +67,7 @@ class VideoController extends Controller
         ]);
 
         $data = [
-            'title' => $request->title,
-            'is_published' => $request->boolean('is_published', $video->is_published),
+                        'is_published' => $request->boolean('is_published', $video->is_published),
             'is_featured' => $request->boolean('is_featured', $video->is_featured),
         ];
 

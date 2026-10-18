@@ -10,76 +10,31 @@ class Idea extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'category_id',
-        'slug',
-        'cover_image',
-        'video_url',
-        'capital',
-        'capital_min',
-        'capital_max',
-        'operating_costs',
-        'expected_revenue',
-        'expected_profit',
-        'currency',
-        'difficulty_level',
-        'time_to_start',
-        'is_featured',
-        'is_published',
-        'published_at',
-        'views_count',
-        'likes_count',
-        'comments_count',
-        'sort_order',
-    ];
-
-    protected $casts = [
-        'capital'          => 'decimal:2',
-        'capital_min'      => 'decimal:2',
-        'capital_max'      => 'decimal:2',
-        'operating_costs'  => 'decimal:2',
-        'expected_revenue' => 'decimal:2',
-        'expected_profit'  => 'decimal:2',
-        'is_featured'      => 'boolean',
-        'is_published'     => 'boolean',
-        'published_at'     => 'datetime',
-        'views_count'      => 'integer',
-        'likes_count'      => 'integer',
-        'comments_count'   => 'integer',
-        'sort_order'       => 'integer',
-    ];
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
+    protected $guarded = [];
 
     public function translations()
     {
         return $this->hasMany(IdeaTranslation::class);
     }
 
-    public function translation(?string $locale = null)
+    public function category()
     {
-        $locale = $locale ?? app()->getLocale();
-        return $this->translations->firstWhere('locale', $locale)
-            ?? $this->translations->firstWhere('locale', 'en');
+        return $this->belongsTo(Category::class);
     }
 
-    public function scopePublished($query)
+    public function getTitleAttribute()
     {
-        return $query->where('is_published', true)
-                     ->whereNotNull('published_at')
-                     ->where('published_at', '<=', now());
+        $trans = $this->translations->where("locale", "en")->first();
+        if ($trans && $trans->title) return $trans->title;
+        $anyTrans = $this->translations->whereNotNull("title")->where("title", "!=", "")->first();
+        return $anyTrans ? $anyTrans->title : "Untitled Idea";
     }
 
-    public function scopeFeatured($query)
+    public function getDescriptionAttribute()
     {
-        return $query->where('is_featured', true);
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
+        $trans = $this->translations->where("locale", "en")->first();
+        if ($trans && $trans->description) return $trans->description;
+        $anyTrans = $this->translations->whereNotNull("description")->where("description", "!=", "")->first();
+        return $anyTrans ? $anyTrans->description : "";
     }
 }

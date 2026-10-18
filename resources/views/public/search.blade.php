@@ -1,55 +1,42 @@
 @extends('public.layouts.app')
 
-@section('meta_title', 'Search — GuhangaAkazi')
-
 @section('content')
-    <div class="container" style="padding-top:2.5rem; padding-bottom:3rem;">
-        <h1 style="font-size:2rem; font-weight:800; margin:0 0 1rem;">Search Results</h1>
+<div class="container" style="max-width: 600px; margin: 2rem auto; padding: 0 1rem;">
+    <!-- Search Bar (Instagram Style) -->
+    <form action="{{ route('public.search') }}" method="GET" style="background: #efefef; border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;" onsubmit="return false;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="live-search-input" name="q" value="{{ request('q') }}" placeholder="Search" style="border: none; background: transparent; outline: none; width: 100%; font-size: 1rem; color: #262626;" autofocus autocomplete="off">
+    </form>
 
-        <form action="{{ route('public.search') }}" method="GET" style="margin-bottom:2rem;">
-            <input type="text" name="q" value="{{ $q }}" placeholder="Search anything..."
-                   class="pub-search-page-input">
-        </form>
-
-        @if ($q === '')
-            <p style="color:var(--text-muted);">Type a keyword above to search ideas, photos, and videos.</p>
-        @else
-            <p style="color:var(--text-muted); margin-bottom:2rem;">
-                Results for <strong>"{{ $q }}"</strong>:
-                {{ $ideas->count() + $photos->count() + $videos->count() }} found
-            </p>
-
-            @if ($ideas->count() > 0)
-                <h2 style="font-size:1.25rem; margin:2rem 0 .75rem;">Business Ideas ({{ $ideas->count() }})</h2>
-                <ul style="padding-left:1.25rem;">
-                    @foreach ($ideas as $idea)
-                        @php($t = $idea->translations->firstWhere('locale', 'en'))
-                        <li style="margin-bottom:.5rem;">{{ $t?->title ?? $idea->slug }}</li>
-                    @endforeach
-                </ul>
-            @endif
-
-            @if ($photos->count() > 0)
-                <h2 style="font-size:1.25rem; margin:2rem 0 .75rem;">Photos ({{ $photos->count() }})</h2>
-                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:1rem;">
-                    @foreach ($photos as $photo)
-                        <img src="{{ asset('storage/' . $photo->file_path) }}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                    @endforeach
-                </div>
-            @endif
-
-            @if ($videos->count() > 0)
-                <h2 style="font-size:1.25rem; margin:2rem 0 .75rem;">Videos ({{ $videos->count() }})</h2>
-                <ul style="padding-left:1.25rem;">
-                    @foreach ($videos as $video)
-                        <li style="margin-bottom:.5rem;">{{ $video->title }}</li>
-                    @endforeach
-                </ul>
-            @endif
-
-            @if ($ideas->count() + $photos->count() + $videos->count() === 0)
-                <p style="color:var(--text-muted);">No results found. Try different keywords.</p>
-            @endif
-        @endif
+    <!-- Results Container -->
+    <div id="search-results-container">
+        @include('public.partials.search-results', ['q' => request('q'), 'ideas' => $ideas ?? collect(), 'skills' => $skills ?? collect(), 'opportunities' => $opportunities ?? collect(), 'videos' => $videos ?? collect()])
     </div>
-@endsection
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('live-search-input');
+        const resultsContainer = document.getElementById('search-results-container');
+        let timeout = null;
+
+        input.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const query = this.value.trim();
+
+            timeout = setTimeout(() => {
+                fetch(`{{ route('public.search') }}?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultsContainer.innerHTML = data.html;
+                })
+                .catch(error => console.error('Error:', error));
+            }, 300); // Wait 300ms after user stops typing
+        });
+    });
+</script>
+@stop

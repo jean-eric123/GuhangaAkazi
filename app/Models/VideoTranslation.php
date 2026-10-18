@@ -7,5 +7,9 @@ class VideoTranslation extends Model
 {
     use HasFactory;
     protected $fillable = ['video_id', 'locale', 'title', 'description', 'meta_title', 'meta_description', 'keywords'];
-    public function video() { return $this->belongsTo(Video::class); }
+
+    public function video()
+    {
+        return $this->belongsTo(Video::class);
+    }
 }
