@@ -52,6 +52,22 @@ Route::middleware('admin')->group(function () {
 
 Route::middleware('admin')->group(function () {
     Route::post('media/photos', [App\Http\Controllers\Admin\MediaController::class, 'uploadPhotos'])
+    ->middleware('throttle:30,1')
+    ->name('media.photos');
+
+Route::post('media/videos', [App\Http\Controllers\Admin\MediaController::class, 'uploadVideos']) 
         ->middleware('throttle:30,1')
-        ->name('media.photos');
+        ->name('media.videos');
+});
+
+Route::middleware('admin')->group(function () {
+    Route::post('media/video-chunk', [App\Http\Controllers\Admin\MediaController::class, 'uploadVideoChunk'])->name('media.video-chunk');
+});
+
+Route::middleware('admin')->group(function () {
+    
+    Route::post('videos/{video}/toggle-publish', [App\Http\Controllers\Admin\VideoController::class, 'togglePublish'])->name('videos.toggle-publish');
+    Route::post('videos/{video}/toggle-featured', [App\Http\Controllers\Admin\VideoController::class, 'toggleFeatured'])->name('videos.toggle-featured');
+
+    Route::resource('videos', App\Http\Controllers\Admin\VideoController::class);
 });

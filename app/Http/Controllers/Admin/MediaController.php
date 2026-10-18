@@ -116,4 +116,125 @@ class MediaController extends Controller
             report($e);
         }
     }
+
+    public function uploadVideos(Request $request)
+    {
+        try {
+            $request->validate([
+                'files' => 'required|array|min:1',
+                'files.*' => 'file|max:102400|mimes:mp4,webm,mov,ogg,avi,mkv',
+            ]);
+
+            $results = [];
+            foreach ($request->file('files') as $file) {
+                $name = \Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                if ($name === '') $name = 'video';
+                $ext = strtolower($file->getClientOriginalExtension() ?: 'mp4');
+                $filename = $name . '-' . \Str::random(8) . '.' . $ext;
+
+                $path = $file->storeAs('media/videos', $filename, 'public');
+
+                $video = \App\Models\Video::create([
+                    'file_path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'source_type' => 'upload',
+                    'is_published' => false,
+                    'is_featured' => false,
+                ]);
+
+                $video->translations()->create([
+                    'locale' => 'en',
+                    'title' => $name,
+                ]);
+
+                $results[] = [
+                    'id' => $video->id,
+                    'url' => \Storage::disk('public')->url($path),
+                    'name' => $name,
+                ];
+            }
+
+            return response()->json(['ok' => true, 'videos' => $results]);
+        } catch (\Exception $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function uploadVideoChunk(Request $request)
+    {
+        $request->validate([
+            'chunk' => 'required|file|max:4096', // 1MB limit per chunk
+            'fileId' => 'required|string',
+            'fileName' => 'required|string',
+            'chunkIndex' => 'required|integer',
+            'totalChunks' => 'required|integer',
+        ]);
+
+        $fileId = $request->input('fileId');
+        $fileName = $request->input('fileName');
+        $chunkIndex = (int) $request->input('chunkIndex');
+        $totalChunks = (int) $request->input('totalChunks');
+
+        $tempDir = storage_path('app/chunks/' . $fileId);
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        // Save the chunk
+        $chunkPath = $tempDir . '/' . $chunkIndex;
+        $request->file('chunk')->move($tempDir, $chunkIndex);
+
+        // Check if all chunks are uploaded
+        $uploadedChunks = count(glob($tempDir . '/*'));
+        
+        if ($uploadedChunks === $totalChunks) {
+            // Combine chunks
+            $finalFileName = \Str::slug(pathinfo($fileName, PATHINFO_FILENAME)) . '-' . \Str::random(8) . '.mp4';
+            $finalPath = 'media/videos/' . $finalFileName;
+            $finalFullPath = storage_path('app/public/' . $finalPath);
+
+            $out = fopen($finalFullPath, 'wb');
+            for ($i = 0; $i < $totalChunks; $i++) {
+                $chunkFile = $tempDir . '/' . $i;
+                $in = fopen($chunkFile, 'rb');
+                while ($buff = fread($in, 4096)) {
+                    fwrite($out, $buff);
+                }
+                fclose($in);
+                unlink($chunkFile); // Delete chunk
+            }
+            fclose($out);
+            rmdir($tempDir); // Delete temp dir
+
+            // Save to database
+            $video = \App\Models\Video::create([
+                'file_path' => $finalPath,
+                'original_filename' => $fileName,
+                'file_size' => filesize($finalFullPath),
+                'mime_type' => 'video/mp4',
+                'source_type' => 'upload',
+                'is_published' => false,
+                'is_featured' => false,
+            ]);
+
+            $video->translations()->create([
+                'locale' => 'en',
+                'title' => pathinfo($fileName, PATHINFO_FILENAME),
+            ]);
+
+            return response()->json([
+                'ok' => true,
+                'complete' => true,
+                'video' => [
+                    'id' => $video->id,
+                    'url' => \Storage::disk('public')->url($finalPath),
+                    'name' => pathinfo($fileName, PATHINFO_FILENAME),
+                ]
+            ]);
+        }
+
+        return response()->json(['ok' => true, 'complete' => false]);
+    }
 }

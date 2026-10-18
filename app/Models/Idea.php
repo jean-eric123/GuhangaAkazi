@@ -14,6 +14,7 @@ class Idea extends Model
         'category_id',
         'slug',
         'cover_image',
+        'video_url',
         'capital',
         'capital_min',
         'capital_max',

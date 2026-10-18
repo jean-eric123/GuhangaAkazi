@@ -66,6 +66,7 @@ class IdeaController extends Controller
             ]);
 
             $this->attachPhotos($idea, $request);
+            $this->attachVideos($idea, $request);
         });
 
         return redirect()->route('admin.ideas.create')
@@ -83,7 +84,15 @@ class IdeaController extends Controller
             ->orderBy('photo_attachments.sort_order')
             ->get();
 
-        return view('admin.ideas.show', compact('idea', 'photos'));
+                $videos = DB::table('video_attachments')
+            ->join('videos', 'videos.id', '=', 'video_attachments.video_id')
+            ->where('video_attachments.attachable_type', Idea::class)
+            ->where('video_attachments.attachable_id', $idea->id)
+            ->select('videos.*')
+            ->orderBy('video_attachments.sort_order')
+            ->get();
+
+        return view('admin.ideas.show', compact('idea', 'photos', 'videos'));
     }
 
     public function edit(Idea $idea)
@@ -131,6 +140,7 @@ class IdeaController extends Controller
             );
 
             $this->attachPhotos($idea, $request);
+            $this->attachVideos($idea, $request);
         });
 
         return redirect()->route('admin.ideas.show', $idea)
@@ -176,6 +186,7 @@ class IdeaController extends Controller
             'category_id'      => $data['category_id'] ?? null,
             'slug'             => $slug,
             'cover_image'      => $data['cover_image'] ?? null,
+            'video_url'        => $data['video_url'] ?? null,
             'capital'          => $data['capital'] ?? null,
             'expected_profit'  => $data['expected_profit'] ?? null,
             'currency'         => $data['currency'] ?? 'RWF',
@@ -207,6 +218,7 @@ class IdeaController extends Controller
             'is_featured'       => ['nullable', 'boolean'],
             'is_published'      => ['nullable', 'boolean'],
             'en_title'             => ['required', 'string', 'max:191'],
+            'video_url'            => ['nullable', 'url', 'max:500'],
             'en_short_description' => ['nullable', 'string'],
             'en_full_description'  => ['nullable', 'string'],
             'en_steps'             => ['nullable', 'string'],
@@ -250,6 +262,30 @@ class IdeaController extends Controller
                     'photo_id'        => $photoId,
                     'attachable_type' => Idea::class,
                     'attachable_id'   => $idea->id,
+                ],
+                [
+                    'sort_order' => $index,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+    }
+
+    protected function attachVideos(Idea $idea, Request $request): void
+    {
+        $ids = $request->input('video_ids', []);
+        if (! is_array($ids) || empty($ids)) return;
+
+        foreach ($ids as $index => $videoId) {
+            $videoId = (int) $videoId;
+            if ($videoId <= 0) continue;
+
+            \DB::table('video_attachments')->updateOrInsert(
+                [
+                    'video_id' => $videoId,
+                    'attachable_type' => Idea::class,
+                    'attachable_id' => $idea->id,
                 ],
                 [
                     'sort_order' => $index,

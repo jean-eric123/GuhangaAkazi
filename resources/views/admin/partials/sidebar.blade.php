@@ -60,7 +60,7 @@
             Photos
         </a>
 
-        <a href="{{ route('admin.videos') }}"
+        <a href="{{ route('admin.videos.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.videos') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
