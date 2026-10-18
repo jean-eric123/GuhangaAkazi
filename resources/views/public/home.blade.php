@@ -1,126 +1,110 @@
-@extends('public.layouts.app')
+@extends("public.layouts.app")
+@section("content")
 
-@section('meta_title', 'GuhangaAkazi — Business Ideas, Skills & Opportunities')
-
-@section('content')
-    <section class="pub-hero">
-        <div class="container">
-            <div class="pub-hero-inner">
-                <h1>Welcome to GuhangaAkazi</h1>
-                <p>Discover business ideas, learn practical skills, and find opportunities to improve your life.</p>
-                <a href="{{ route('public.ideas') }}" class="btn">Explore Ideas</a>
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Discover Business Ideas & Skills</h1>
+            <p>Your journey to self-employment starts here. Explore practical ideas, learn new skills, and find opportunities in Rwanda.</p>
+            <div class="hero-buttons">
+                <a href="{{ route("public.ideas") }}" class="btn btn-primary">Explore Ideas</a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    {{-- Featured Ideas --}}
-    @if ($ideas->count() > 0)
-        <section class="pub-section">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="pub-section-title">Featured Business Ideas</h2>
-                    <a href="{{ route('public.ideas') }}" class="section-view-all">View all →</a>
+@if($featuredIdeas->isNotEmpty())
+<section class="section py-5">
+    <div class="container">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:end; margin-bottom:2rem;">
+            <h2 style="font-size:1.5rem; font-weight:700;">Featured Business Ideas</h2>
+            <a href="{{ route("public.ideas") }}" style="color:#0B6B4F; text-decoration:none; font-weight:600;">View all &rarr;</a>
+        </div>
+        <div class="grid-cards">
+            @foreach($featuredIdeas as $idea)
+                <div class="card">
+                    <a href="{{ route("public.ideas.show", $idea->slug) }}">
+                        @php $img = $idea->cover_image; $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null; @endphp
+                        @if($src)
+                            <img src="{{ $src }}" class="card-img" loading="lazy">
+                        @else
+                            <div class="card-img"></div>
+                        @endif
+                    </a>
+                    <div class="card-body">
+                        <h3 class="card-title"><a href="{{ route("public.ideas.show", $idea->slug) }}">{{ $idea->title ?? "Untitled Idea" }}</a></h3>
+                        @if($idea->description)
+                            <p class="card-text">{{ Str::limit($idea->description, 80) }}</p>
+                        @endif
+                    </div>
                 </div>
-                <div class="grid-cards">
-                    @foreach ($ideas as $idea)
-                        @php
-                            $t = $idea->translations->firstWhere('locale', 'en');
-                            $img = $idea->cover_image
-                                ? (preg_match('#^https?://#i', $idea->cover_image) ? $idea->cover_image : asset('storage/' . ltrim($idea->cover_image, '/')))
-                                : null;
-                        @endphp
-                        <a href="{{ route('public.ideas.show', $idea->slug) }}" class="card card-idea">
-                            @if ($img)
-                                <div class="card-image-wrap">
-                                    <img src="{{ $img }}" class="card-img" alt="{{ $t?->title ?? $idea->slug }}" loading="lazy">
-                                </div>
-                            @endif
-                            <div class="card-body">
-                                <h3 class="card-title">{{ $t?->title ?? $idea->slug }}</h3>
-                                <p class="card-desc">{{ $t?->short_description ?? '' }}</p>
-                                <div class="card-money">
-                                    @if ($idea->capital)
-                                        <div class="money-row">
-                                            <span class="money-label">Starting capital</span>
-                                            <span class="money-value">{{ number_format($idea->capital, 0) . ' ' . $idea->currency }}</span>
-                                        </div>
-                                    @endif
-                                    @if ($idea->expected_profit)
-                                        <div class="money-row">
-                                            <span class="money-label">Expected profit</span>
-                                            <span class="money-value money-profit">{{ number_format($idea->expected_profit, 0) . ' ' . $idea->currency }}</span>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 
-    {{-- Photos --}}
-    @if ($photos->count() > 0)
-        <section class="pub-section" style="background:#f8faf9;">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="pub-section-title">Photos</h2>
-                    <a href="{{ route('public.photos') }}" class="section-view-all">View all →</a>
+@if($photos->isNotEmpty())
+<section class="section py-5 bg-light">
+    <div class="container">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:end; margin-bottom:2rem;">
+            <h2 style="font-size:1.5rem; font-weight:700;">Latest Photos</h2>
+            <a href="{{ route("public.photos") }}" style="color:#0B6B4F; text-decoration:none; font-weight:600;">View all &rarr;</a>
+        </div>
+        <div class="grid-cards">
+            @foreach($photos as $photo)
+                <div class="card">
+                    @php $img = $photo->file_path; $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null; @endphp
+                    @if($src)
+                        <img src="{{ $src }}" class="card-img" loading="lazy">
+                    @else
+                        <div class="card-img"></div>
+                    @endif
+                    <div class="card-body">
+                        <h3 class="card-title">{{ $photo->title ?? "Untitled Photo" }}</h3>
+                        @if($photo->description)
+                            <p class="card-text">{{ Str::limit($photo->description, 80) }}</p>
+                        @endif
+                    </div>
                 </div>
-                <div class="grid-photos-bordered">
-                    @foreach ($photos as $photo)
-                        @php
-                            $pt = $photo->translations->firstWhere('locale', 'en');
-                            $pimg = preg_match('#^https?://#i', $photo->file_path) ? $photo->file_path : asset('storage/' . ltrim($photo->file_path, '/'));
-                        @endphp
-                        <div class="photo-card-b">
-                            <div class="photo-thumb-b">
-                                <img src="{{ $pimg }}" alt="{{ $pt?->title ?? 'Photo' }}" loading="lazy">
-                            </div>
-                            <div class="photo-body-b">
-                                <h3 class="photo-title-b">{{ $pt?->title ?? 'Untitled' }}</h3>
-                                @if ($pt?->description)
-                                    <p class="photo-desc-b">{{ $pt->description }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 
-    {{-- Videos --}}
-    @if ($videos->count() > 0)
-        <section class="pub-section">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="pub-section-title">Videos</h2>
-                    <a href="{{ route('public.videos') }}" class="section-view-all">View all →</a>
+@if($videos->isNotEmpty())
+<section class="section py-5">
+    <div class="container">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:end; margin-bottom:2rem;">
+            <h2 style="font-size:1.5rem; font-weight:700;">Latest Videos</h2>
+            <a href="{{ route("public.videos") }}" style="color:#0B6B4F; text-decoration:none; font-weight:600;">View all &rarr;</a>
+        </div>
+        <div class="grid-cards">
+            @foreach($videos as $video)
+                <div class="card">
+                    @php $vid = $video->video_url ?? $video->file_path; $vidSrc = $vid ? (str_starts_with($vid, "http") ? $vid : asset("storage/" . $vid)) : null; @endphp
+                    @if($vidSrc)
+                        <video controls preload="none"><source src="{{ $vidSrc }}" type="video/mp4"></video>
+                    @else
+                        <div style="height:200px; background:#000; display:flex; align-items:center; justify-content:center; color:#fff;">No Video Available</div>
+                    @endif
+                    <div class="card-body">
+                        <h3 class="card-title">{{ $video->title ?? "Untitled Video" }}</h3>
+                    </div>
                 </div>
-                <div class="grid-videos-bordered">
-                    @foreach ($videos as $video)
-                        @php
-                            $vt = $video->translations->firstWhere('locale', 'en');
-                            $vurl = preg_match('#^https?://#i', $video->file_path) ? $video->file_path : asset('storage/' . ltrim($video->file_path, '/'));
-                        @endphp
-                        <div class="video-card-b">
-                            <div class="video-thumb-b">
-                                <video controls preload="metadata">
-                                    <source src="{{ $vurl }}" type="video/mp4">
-                                </video>
-                            </div>
-                            <div class="video-body-b">
-                                <h3 class="video-title-b">{{ $vt?->title ?? 'Video' }}</h3>
-                                @if ($vt?->description)
-                                    <p class="video-desc-b">{{ $vt->description }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to start your journey?</h2>
+        <p>Join thousands of Rwandans building businesses.</p>
+        <a href="{{ route("public.skills") }}" class="cta-button">Get in Touch</a>
+    </div>
+</section>
+
 @endsection

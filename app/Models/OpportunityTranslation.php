@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OpportunityTranslation extends Model
 {
+    protected $guarded = [];
+
     //
 }

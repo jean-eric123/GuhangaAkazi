@@ -5,33 +5,21 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
-    /**
-     * Ensure the request is authenticated with the admin guard.
-     * Guests are redirected to /admin/login.
-     * Inactive admins are logged out immediately.
-     */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (! Auth::guard('admin')->check()) {
-            return redirect()->guest(route('admin.login'));
+        if (!Auth::guard('admin')->check()) {
+            $request->session()->put('url.intended', $request->fullUrl());
+            return redirect()->route('admin.login');
         }
 
-        $admin = Auth::guard('admin')->user();
+        $response = $next($request);
 
-        if (! $admin->is_active) {
-            Auth::guard('admin')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect()
-                ->route('admin.login')
-                ->withErrors(['email' => 'Your account has been deactivated.']);
-        }
-
-        return $next($request);
+        // Prevent the browser from caching any admin pages
+        return $response->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+                        ->header('Pragma', 'no-cache')
+                        ->header('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT');
     }
 }

@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SkillTranslation extends Model
 {
+    protected $guarded = [];
+
     //
 }

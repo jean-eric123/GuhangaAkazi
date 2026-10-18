@@ -11,4 +11,11 @@ class Post extends Model
 
 
     //
+
+    public function getDescriptionAttribute()
+    {
+        $trans = $this->translations->where("locale", "en")->first() ?? $this->translations->first();
+        if (!$trans) return "";
+        return $trans->full_description ?? $trans->content ?? $trans->short_description ?? $trans->description ?? "";
+    }
 }

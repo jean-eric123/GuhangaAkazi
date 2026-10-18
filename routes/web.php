@@ -20,3 +20,5 @@ Route::get('/contact', [PageController::class, 'contact'])->name('public.contact
 Route::get('/privacy', [PageController::class, 'privacy'])->name('public.privacy');
 Route::get('/terms', [PageController::class, 'terms'])->name('public.terms');
 Route::get('/search', [PageController::class, 'search'])->name('public.search');
+
+Route::get("/skills/{slug}", [App\Http\Controllers\Public\PageController::class, "skillDetail"])->name("public.skills.show");

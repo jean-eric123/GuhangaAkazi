@@ -5,6 +5,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PhotoTranslation extends Model
 {
+    protected $guarded = [];
+
     use HasFactory;
     protected $fillable = [
         'photo_id', 'locale', 'title', 'description', 'alt_text',

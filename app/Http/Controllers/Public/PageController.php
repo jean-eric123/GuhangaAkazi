@@ -67,8 +67,8 @@ class PageController extends Controller
         return view("public.articles.show", compact("article"));
     }
 
-    public function photos() { return view("public.placeholder", ["title" => "Photos"]); }
-    public function videos() { return view("public.placeholder", ["title" => "Videos"]); }
+    public function photos() { $photos = Photo::with("translations")->where("is_published", true)->latest()->paginate(12); return view("public.photos.index", compact("photos")); }
+    public function videos() { $videos = Video::with("translations")->where("is_published", true)->latest()->paginate(12); return view("public.videos.index", compact("videos")); }
     public function about() { return view("public.placeholder", ["title" => "About Us"]); }
     public function contact() { return view("public.placeholder", ["title" => "Contact Us"]); }
     public function privacy() { return view("public.placeholder", ["title" => "Privacy Policy"]); }

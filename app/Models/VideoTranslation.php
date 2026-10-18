@@ -5,6 +5,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class VideoTranslation extends Model
 {
+    protected $guarded = [];
+
     use HasFactory;
     protected $fillable = ['video_id', 'locale', 'title', 'description', 'meta_title', 'meta_description', 'keywords'];
 

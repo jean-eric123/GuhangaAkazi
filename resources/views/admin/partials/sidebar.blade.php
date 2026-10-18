@@ -26,8 +26,8 @@
             Business Ideas
         </a>
 
-        <a href="{{ route('admin.skills') }}"
-           class="sidebar-link {{ request()->routeIs('admin.skills') ? 'active' : '' }}">
+        <a href="{{ route('admin.skills.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.skills.*') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3l2.09 6.26L20 10l-5 4.03L16.18 21 12 17.27 7.82 21 9 14.03 4 10l5.91-.74z"/>
             </svg>
@@ -51,8 +51,8 @@
             Articles
         </a>
 
-        <a href="{{ route('admin.photos') }}"
-           class="sidebar-link {{ request()->routeIs('admin.photos') ? 'active' : '' }}">
+        <a href="{{ route('admin.photos.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.photos.*') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>

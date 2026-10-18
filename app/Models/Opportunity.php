@@ -24,4 +24,11 @@ class Opportunity extends Model
         $anyTrans = $this->translations->whereNotNull("title")->where("title", "!=", "")->first();
         return $anyTrans ? $anyTrans->title : "Untitled Opportunity";
     }
+
+    public function getDescriptionAttribute()
+    {
+        $trans = $this->translations->where("locale", "en")->first() ?? $this->translations->first();
+        if (!$trans) return "";
+        return $trans->full_description ?? $trans->content ?? $trans->short_description ?? $trans->description ?? "";
+    }
 }

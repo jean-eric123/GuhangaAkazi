@@ -1,119 +1,48 @@
-@extends('public.layouts.app')
+@extends("public.layouts.app")
+@section("content")
+<div class="bg-light" style="padding: 3rem 0; border-bottom: 1px solid #e5e7eb;">
+    <div class="container">
+        <div style="margin-bottom: 1rem;">
+            <a href="{{ route("public.ideas") }}" style="color: #0B6B4F; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Ideas
+            </a>
+        </div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: #064e3b; margin-bottom: 0.5rem; line-height: 1.2;">{{ $idea->title ?? "Untitled Idea" }}</h1>
+    </div>
+</div>
+<div class="section">
+    <div class="container" style="max-width: 800px; margin: 0 auto;">
+        @php
+            $img = $idea->cover_image;
+            $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null;
+        @endphp
+        @if($src)
+            <img src="{{ $src }}" style="width: 100%; border-radius: 0.5rem; margin-bottom: 2rem; object-fit: cover; max-height: 400px;" onerror="this.style.display='none'">
+        @endif
 
-@section('meta_title', ($t = $idea->translations->firstWhere('locale', 'en')) ? $t->title . ' — GuhangaAkazi' : $idea->slug)
-@section('meta_description', $t?->short_description ?? '')
+        @php
+            $desc = $idea->description ?? "No description provided yet.";
+        @endphp
 
-@section('content')
-    <div class="container" style="padding:2rem 0;">
-        {{-- Breadcrumb --}}
-        <p style="font-size:.85rem; color:var(--text-muted); margin-bottom:1rem;">
-            <a href="{{ route('public.ideas') }}" style="color:var(--text-muted);">Ideas</a> / {{ $t?->title ?? $idea->slug }}
-        </p>
+        <div style="font-size: 1.15rem; line-height: 1.8; color: #374151;">
+            <span id="short-desc">{!! nl2br(e(Str::limit($desc, 250))) !!}</span>
+            <span id="full-desc" style="display: none;">{!! nl2br(e($desc)) !!}</span>
+            
+            @if(strlen($desc) > 250)
+                <a href="javascript:void(0)" onclick="document.getElementById('short-desc').style.display='none'; document.getElementById('full-desc').style.display='inline'; this.style.display='none';" style="color: #0B6B4F; font-weight: 700; text-decoration: none; display: block; margin-top: 0.5rem;">Read more...</a>
+            @endif
+        </div>
 
-        <div class="idea-layout">
-            {{-- LEFT: Content --}}
-            <div class="idea-content">
-                {{-- Cover image --}}
-                @if ($idea->cover_image)
-                    @php
-                        $cover = preg_match('#^https?://#i', $idea->cover_image) ? $idea->cover_image : asset('storage/' . ltrim($idea->cover_image, '/'));
-                    @endphp
-                    <div class="idea-cover">
-                        <img src="{{ $cover }}" alt="{{ $t?->title ?? $idea->slug }}">
-                    </div>
-                @endif
-
-                {{-- Title + category --}}
-                @if ($idea->category?->translation()?->name)
-                    <span class="card-category" style="display:inline-block; margin-bottom:.5rem;">{{ $idea->category->translation()->name }}</span>
-                @endif
-                <h1 class="idea-title">{{ $t?->title ?? $idea->slug }}</h1>
-
-                {{-- Short description --}}
-                @if ($t?->short_description)
-                    <p class="idea-short">{{ $t->short_description }}</p>
-                @endif
-
-                {{-- FULL DESCRIPTION — shown before money, as requested --}}
-                @if ($t?->full_description)
-                    <div class="idea-section">
-                        <h2>About this idea</h2>
-                        <p>{!! nl2br(e($t->full_description)) !!}</p>
-                    </div>
-                @endif
-
-                {{-- Money box below full description --}}
-                <div class="idea-money-box">
-                    <h2>Money guide</h2>
-                    <div class="idea-money-grid">
-                        @if ($idea->capital)
-                            <div class="idea-money-item">
-                                <span>Starting capital</span>
-                                <strong>{{ number_format($idea->capital, 0) . ' ' . $idea->currency }}</strong>
-                            </div>
-                        @endif
-                        @if ($idea->expected_profit)
-                            <div class="idea-money-item idea-money-highlight">
-                                <span>Expected profit</span>
-                                <strong>{{ number_format($idea->expected_profit, 0) . ' ' . $idea->currency }}</strong>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Steps / Requirements / Tips --}}
-                @if ($t?->steps)
-                    <div class="idea-section"><h2>Steps</h2><p>{!! nl2br(e($t->steps)) !!}</p></div>
-                @endif
-                @if ($t?->requirements)
-                    <div class="idea-section"><h2>Requirements</h2><p>{!! nl2br(e($t->requirements)) !!}</p></div>
-                @endif
-                @if ($t?->tips)
-                    <div class="idea-section"><h2>Tips</h2><p>{!! nl2br(e($t->tips)) !!}</p></div>
-                @endif
-
-                {{-- Video if any --}}
-                @if ($idea->video_url)
-                    <div class="idea-section">
-                        <h2>Video</h2>
-                        <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px;">
-                            @php
-                                $url = trim($idea->video_url);
-                                if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $m)) {
-                                    $videoSrc = 'https://www.youtube.com/embed/' . $m[1] . '?rel=0';
-                                } elseif (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
-                                    $videoSrc = 'https://player.vimeo.com/video/' . $m[1];
-                                } else {
-                                    $videoSrc = $url;
-                                }
-                            @endphp
-                            @if (str_contains($videoSrc, 'youtube') || str_contains($videoSrc, 'vimeo'))
-                                <iframe src="{{ $videoSrc }}" style="position:absolute; inset:0; width:100%; height:100%;" frameborder="0" allowfullscreen></iframe>
-                            @else
-                                <video controls style="position:absolute; inset:0; width:100%; height:100%;"><source src="{{ $videoSrc }}" type="video/mp4"></video>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-            </div>
-
-            {{-- RIGHT: sidebar with related photos --}}
-            @php
-                $photos = \App\Models\Photo::where('is_published', true)
-                    ->whereHas('translations')
-                    ->latest()->take(6)->get();
-            @endphp
-            @if ($photos->count() > 0)
-                <aside class="idea-sidebar">
-                    <h3>Photos</h3>
-                    <div class="idea-photos-grid">
-                        @foreach ($photos as $photo)
-                            @php $pimg = preg_match('#^https?://#i', $photo->file_path) ? $photo->file_path : asset('storage/' . ltrim($photo->file_path, '/')); @endphp
-                            <img src="{{ $pimg }}" alt="photo">
-                        @endforeach
-                    </div>
-                </aside>
+        <div class="card" style="margin-top: 2rem; padding: 1.5rem; background: #f0fdf4; border: 1px solid #dcfce7;">
+            <h3 style="margin-top: 0; color: #064e3b; font-size: 1.25rem; margin-bottom: 1.5rem;">Business Details</h3>
+            @if($idea->capital)
+                <div class="detail-row"><strong>Starting Capital:</strong> <span style="color: #0B6B4F; font-weight: 700;">{{ $currency ?? "RWF" }} {{ number_format($idea->capital) }}</span></div>
+            @endif
+            @if($idea->expected_profit)
+                <div class="detail-row"><strong>Expected Profit:</strong> <span style="color: #0B6B4F; font-weight: 700;">{{ $currency ?? "RWF" }} {{ number_format($idea->expected_profit) }}</span></div>
             @endif
         </div>
     </div>
+</div>
 @endsection
