@@ -17,7 +17,17 @@ class SettingsSeeder extends Seeder
             ['general', 'site_logo',              '',                                             'image',  'Logo'],
             ['general', 'site_favicon',           '',                                             'image',  'Favicon'],
 
-            ['contact', 'contact_email',          'info@guhangakazi.rw',                          'string', 'Contact Email'],
+            
+            ['contact', 'contact_email', 'info@guhangakazi.rw', 'string', 'Contact Email'],
+            ['contact', 'contact_phone', '+250 788 000 000', 'string', 'Contact Phone'],
+            ['contact', 'contact_address', 'Kigali, Rwanda', 'string', 'Contact Address'],
+            ['contact', 'profile_photo', '', 'image', 'Profile Photo'],
+            ['social', 'facebook_url', '', 'string', 'Facebook URL'],
+            ['social', 'twitter_url', '', 'string', 'Twitter/X URL'],
+            ['social', 'instagram_url', '', 'string', 'Instagram URL'],
+            ['social', 'youtube_url', '', 'string', 'YouTube URL'],
+            ['social', 'linkedin_url', '', 'string', 'LinkedIn URL'],
+['contact', 'contact_email',          'info@guhangakazi.rw',                          'string', 'Contact Email'],
             ['contact', 'contact_phone',          '',                                             'string', 'Contact Phone'],
             ['contact', 'contact_address',        'Kigali, Rwanda',                               'string', 'Contact Address'],
 

@@ -1,0 +1,278 @@
+:root {
+    --brand: #0B6B4F;
+    --brand-dark: #095c43;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; overflow-x: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); line-height: 1.6; background: #fff; }
+a { color: var(--brand); text-decoration: none; }
+img { max-width: 100%; height: auto; display: block; }
+
+/* ---------- Global Container ---------- */
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ---------- Header (Mobile First) ---------- */
+.pub-header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.pub-header-inner { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; gap: 1rem; }
+.pub-logo { font-size: 1.4rem; font-weight: 800; color: var(--brand); text-decoration: none; white-space: nowrap; }
+.pub-logo span { color: var(--text); }
+.pub-mobile-toggle { display: inline-flex; background: none; border: 0; padding: .4rem; cursor: pointer; color: var(--text); }
+.pub-search-desktop { display: none; }
+.pub-nav { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--border); padding: .5rem 1.25rem 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,.08); max-height: calc(100vh - 70px); overflow-y: auto; }
+.pub-nav.open { display: flex; }
+.pub-nav a { width: 100%; padding: .9rem 0; border-bottom: 1px solid var(--border); font-size: 1rem; color: var(--text); display: flex; align-items: center; gap: .5rem; }
+.pub-nav a.active { color: var(--brand); font-weight: 700; }
+.pub-nav a:last-of-type { border-bottom: none; }
+.pub-search-mobile { margin-top: 1rem; display: flex; gap: .5rem; width: 100%; }
+.pub-search-mobile input { flex: 1; padding: .8rem 1rem; border: 1px solid var(--border); border-radius: 99px; outline: none; }
+.pub-search-mobile button { width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ---------- Hero ---------- */
+.pub-hero { background: #fff; padding: 4rem 0; text-align: center; border-bottom: 1px solid var(--border); }
+.pub-hero h1 { font-size: 2.25rem; font-weight: 800; margin: 0 0 1rem; line-height: 1.2; }
+.pub-hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem; }
+.btn { display: inline-block; background: var(--brand); color: #fff !important; padding: .8rem 2rem; border-radius: 8px; font-weight: 600; font-size: 1rem; text-decoration: none !important; border: 0; cursor: pointer; }
+.btn:hover { background: var(--brand-dark); }
+
+/* ---------- Sections & Cards ---------- */
+.pub-section { padding: 3rem 0; }
+.card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 2rem; text-align: center; max-width: 600px; margin: 0 auto; }
+.card h2 { font-size: 1.5rem; font-weight: 700; color: var(--brand); margin: 0 0 .5rem; }
+.card p { color: var(--text-muted); margin: 0; }
+
+/* ---------- Footer (Mobile: 1 Col) ---------- */
+.pub-footer { background: #0d1f1a; color: #cbd5d0; padding: 3rem 0 1.5rem; margin-top: 4rem; }
+.pub-footer-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+.pub-footer h4 { color: #fff; font-size: .9rem; font-weight: 700; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: .5px; }
+.pub-footer ul { list-style: none; padding: 0; margin: 0; }
+.pub-footer ul li { margin-bottom: .5rem; }
+.pub-footer a { color: #94a3b8; text-decoration: none; font-size: .9rem; }
+.pub-footer a:hover { color: #fff; }
+.pub-footer-brand .pub-logo { color: #fff !important; display: block; margin-bottom: .5rem; font-size: 1.4rem; }
+.pub-footer-brand p { color: #94a3b8; font-size: .9rem; margin: 0; }
+.pub-footer-bottom { text-align: center; padding-top: 1.5rem; font-size: .8rem; color: #64748b; }
+
+/* =========================================
+   TABLET & DESKTOP VIEW (768px and up)
+   ========================================= */
+@media (min-width: 768px) {
+    .pub-mobile-toggle { display: none; }
+    .pub-nav { display: flex; flex-direction: row; position: static; border: 0; padding: 0; box-shadow: none; background: none; max-height: none; gap: 1.5rem; }
+    .pub-nav a { width: auto; padding: 0; border: 0; font-size: .95rem; }
+    .pub-search-mobile { display: none; }
+    
+    .pub-hero { padding: 5rem 0; }
+    .pub-hero h1 { font-size: 3rem; }
+
+    /* 2 Columns for Tablet */
+    .pub-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* =========================================
+   LAPTOP & LARGE DESKTOP (1024px and up)
+   ========================================= */
+@media (min-width: 1024px) {
+    .pub-search-desktop { display: block; flex: 1; max-width: 400px; margin: 0 2rem; position: relative; }
+    .pub-search-desktop input { width: 100%; padding: .6rem 1rem; border: 1px solid var(--border); border-radius: 99px; background: #f1f5f4; outline: none; }
+    .pub-search-desktop input:focus { background: #fff; border-color: var(--brand); }
+    .pub-search-desktop button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: var(--brand); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    /* 4 Columns for Desktop Footer */
+    .pub-footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; }
+    .pub-footer-bottom { display: flex; justify-content: space-between; text-align: left; }
+}
+
+/* ---------- Desktop/Tablet Header Layout ---------- */
+@media (min-width: 768px) {
+    .pub-header-inner {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .pub-nav {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem; /* Base gap */
+        align-items: center;
+    }
+
+    /* Shrink the text for landscape phones and tablets */
+    @media (max-width: 1100px) {
+        .pub-nav a { font-size: 0.85rem; gap: 0.75rem; }
+        .pub-logo { font-size: 1.2rem; }
+        .pub-search-desktop { display: none; } /* Hide the full search bar */
+    }
+
+    /* Make the search bar visible on real desktops */
+    @media (min-width: 1101px) {
+        .pub-search-desktop {
+            display: block;
+            flex: 1;
+            max-width: 300px;
+            position: relative;
+            margin: 0 1rem;
+        }
+        .pub-search-desktop input {
+            width: 100%;
+            padding: .6rem 2.5rem .6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            background: #f8faf9;
+            outline: none;
+        }
+        .pub-search-desktop button {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--brand);
+            color: #fff;
+            border: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    }
+}
+
+/* ---------- Logo with icon ---------- */
+.pub-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    text-decoration: none !important;
+    flex-shrink: 0;
+    padding: .25rem 0;
+}
+.pub-logo-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: block;
+}
+.pub-logo-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--brand);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    line-height: 1;
+}
+.pub-logo-text span {
+    color: var(--text);
+}
+
+/* ---------- Header spacing fix ---------- */
+.pub-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-top: .85rem;
+    padding-bottom: .85rem;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Container: make sure padding exists on BOTH sides always */
+.pub-header .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .pub-header .container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    .pub-logo-text { font-size: 1.4rem; }
+    .pub-logo-icon { width: 38px; height: 38px; }
+}
+
+/* Footer brand also shows icon on dark background */
+.pub-footer .pub-logo-text { color: #fff; }
+.pub-footer .pub-logo-text span { color: #fff; }
+.pub-footer .pub-logo-icon { box-shadow: 0 0 0 1px rgba(255,255,255,.15); }
+
+/* Search box: keep clear spacing from the right edge in nav */
+.pub-search-desktop {
+    margin-right: .75rem;
+}
+.pub-search-desktop input {
+    padding-right: 2.75rem !important;
+}
+.pub-search-desktop button {
+    right: 6px !important;
+}
+
+/* Mobile menu — ensure it has proper padding */
+@media (max-width: 767px) {
+    .pub-nav.open {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .pub-search-mobile {
+        width: 100%;
+        display: flex;
+        gap: .6rem;
+        margin-top: 1rem;
+    }
+    .pub-search-mobile input { flex: 1; }
+    .pub-search-mobile button { flex-shrink: 0; }
+}
+
+/* Search results page input: give breathing room */
+.pub-search-page-input {
+    width: 100%;
+    padding: .9rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+/* ---------- Fix Landscape / Tablet Nav Wrapping ---------- */
+@media (min-width: 768px) and (max-width: 1150px) {
+    /* Force the header to fit on one line */
+    .pub-header-inner {
+        flex-wrap: nowrap !important;
+    }
+
+    /* Prevent text from wrapping to a second line */
+    .pub-nav a {
+        white-space: nowrap !important; 
+        font-size: 0.82rem !important; /* Slightly smaller to fit */
+    }
+
+    /* Reduce the gap between links */
+    .pub-nav {
+        gap: 0.6rem !important;
+    }
+
+    /* Shrink the logo slightly to give menu space */
+    .pub-logo-text {
+        font-size: 1.1rem !important;
+    }
+    .pub-logo-icon {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+/* On slightly wider screens (Tablets/Desktops), restore normal spacing */
+@media (min-width: 1151px) {
+    .pub-nav {
+        gap: 1.25rem !important;
+    }
+    .pub-nav a {
+        font-size: 0.95rem !important;
+    }
+}

@@ -71,3 +71,8 @@ Route::middleware('admin')->group(function () {
 
     Route::resource('videos', App\Http\Controllers\Admin\VideoController::class);
 });
+
+Route::middleware('admin')->group(function () {
+    Route::get('settings', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings');
+    Route::post('settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+});
