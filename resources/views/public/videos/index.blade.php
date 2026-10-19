@@ -15,7 +15,7 @@
                 @foreach($videos as $video)
                     <div class="card">
                         @if($video->video_url || $video->file_path)
-                            <video controls preload="none"><source src="{{ $video->video_url ?? asset("storage/" . $video->file_path) }}" type="video/mp4"></video>
+                            <video controls preload="none" style="width:100%; aspect-ratio:16/9; object-fit:cover; background:#000;"><source src="{{ $video->video_url ?? Storage::disk("r2")->url($video->file_path) }}" type="video/mp4"></video>
                         @else
                             <div style="height:200px; background:#000; display:flex; align-items:center; justify-content:center; color:#fff;">No Video Available</div>
                         @endif

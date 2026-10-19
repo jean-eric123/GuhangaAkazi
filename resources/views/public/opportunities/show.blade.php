@@ -15,10 +15,10 @@
     <div class="container" style="max-width: 800px; margin: 0 auto;">
         @php
             $img = $opportunity->cover_image;
-            $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null;
+            $src = $img ? (str_starts_with($img, "http") ? $img : Storage::disk("r2")->url($img)) : null;
         @endphp
         @if($src)
-            <img src="{{ $src }}" style="width: 100%; border-radius: 0.5rem; margin-bottom: 2rem; object-fit: cover; max-height: 400px;" onerror="this.style.display='none'">
+            <img src="{{ $src }}" style="width: 100%; border-radius: 0.5rem; margin-bottom: 2rem; object-fit: cover; max-height: 400px;" onerror="this.src='https://via.placeholder.com/600x400?text=Image+Not+Available'">
         @endif
 
         @php

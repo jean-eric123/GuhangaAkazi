@@ -17,7 +17,7 @@
                     <div class="card">
                         <a href="{{ route('public.articles.show', $article->slug ?? $article->id) }}">
                             @if($article->cover_image)
-                                <img src="{{ asset('storage/' . $article->cover_image) }}" class="card-img">
+                                <img src="{{ Storage::disk('r2')->url($article->cover_image) }}" class="card-img">
                             @else
                                 <div class="card-img-placeholder"></div>
                             @endif

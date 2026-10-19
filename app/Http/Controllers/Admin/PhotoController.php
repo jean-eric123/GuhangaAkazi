@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class PhotoController extends Controller
 {
+    public function create() { return view("admin.photos.form"); }
+
+    public function store(Request $request) {
+        $request->validate(['title' => 'required|string|max:255', 'image' => 'required|image|max:5120']);
+        $path = $request->file('image')->store('photos', 'r2');
+        $photo = Photo::create(['file_path' => $path, 'is_published' => $request->boolean('is_published', true)]);
+        $photo->translations()->create(['locale' => 'en', 'title' => $request->title, 'description' => $request->description]);
+        return redirect()->route('admin.photos.index')->with('success', 'Photo uploaded to Cloudflare R2!');
+    }
+
     public function index()
     {
         $photos = Photo::with("translations")->latest()->paginate(24);
@@ -25,7 +35,7 @@ class PhotoController extends Controller
         $request->validate(["title" => "required"]);
         
         if ($request->hasFile("file_path")) {
-            $photo->file_path = $request->file("file_path")->store("photos", "public");
+            $photo->file_path = $request->file("file_path")->store("photos", "r2");
         }
         $photo->is_published = $request->boolean("is_published", true);
         $photo->save();

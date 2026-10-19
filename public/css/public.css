@@ -790,3 +790,26 @@ body.admin { background:var(--bg); }
 .cta-section p { font-size: 1.1rem !important; margin-bottom: 2rem !important; opacity: 0.9 !important; }
 .cta-button { display: inline-block !important; background: white !important; color: #0B6B4F !important; padding: 0.75rem 2rem !important; font-size: 1rem !important; font-weight: 700 !important; border-radius: 50px !important; text-decoration: none !important; }
 .cta-button:hover { background: #f3f4f6 !important; }
+
+--- Professional CTA Fix --- */
+.cta-section { padding: 3rem 1.5rem !important; text-align: center !important; background: linear-gradient(135deg, #0B6B4F 0%, #064e3b 100%) !important; color: white !important; }
+.cta-section h2 { font-size: 1.8rem !important; font-weight: 800 !important; margin-bottom: 0.75rem !important; }
+.cta-section p { font-size: 1rem !important; margin-bottom: 1.5rem !important; opacity: 0.9 !important; }
+.cta-button { display: inline-block !important; background: white !important; color: #0B6B4F !important; padding: 0.6rem 1.5rem !important; font-size: 0.95rem !important; font-weight: 700 !important; border-radius: 50px !important; text-decoration: none !important; transition: transform 0.2s; }
+.cta-button:hover { transform: scale(1.05) !important; }
+@media (min-width: 768px) {
+    .cta-section { padding: 4rem 2rem !important; }
+    .cta-section h2 { font-size: 2.2rem !important; }
+    .cta-section p { font-size: 1.1rem !important; }
+    .cta-button { padding: 0.75rem 2rem !important; font-size: 1rem !important; }
+}
+
+--- Professional 16:9 Aspect Ratio --- */
+.card img, .card video, .card-img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+    display: block !important;
+    background-color: #000 !important;
+}

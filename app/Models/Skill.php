@@ -29,24 +29,7 @@ class Skill extends Model
 
     
 
-    protected static function booted()
-    {
-        static::saved(function ($model) {
-            if ($model->cover_image) {
-                $ext = strtolower(pathinfo($model->cover_image, PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
-                    $photo = \App\Models\Photo::firstOrCreate(
-                        ["file_path" => $model->cover_image],
-                        ["is_published" => true]
-                    );
-                    $photo->translations()->updateOrCreate(
-                        ["locale" => "en"],
-                        ["title" => $model->title ?? "Untitled", "description" => $model->description ?? ""]
-                    );
-                }
-            }
-        });
-    }
+    
 
     public function getDescriptionAttribute()
     {

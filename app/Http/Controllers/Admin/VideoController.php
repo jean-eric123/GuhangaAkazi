@@ -1,110 +1,89 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
     public function index()
     {
-        $videos = Video::orderByDesc('created_at')->paginate(15);
-        return view('admin.videos.index', compact('videos'));
+        $videos = Video::with("translations")->latest()->paginate(15);
+        return view("admin.videos.index", compact("videos"));
     }
 
     public function create()
     {
-        return view('admin.videos.form', ['video' => null]);
+        return view("admin.videos.form");
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:191',
-            'file'  => 'required|file|mimes:mp4,webm,mov,ogg,avi,mkv|max:102400',
+            "title" => "required|string|max:255",
+            "file" => "required|file|mimes:mp4,mov,webm|max:102400",
         ]);
 
-        $file = $request->file('file');
-        $name = Str::slug($request->title);
-        $ext = $file->getClientOriginalExtension();
-        $filename = $name . '-' . Str::random(6) . '.' . $ext;
-        $path = $file->storeAs('media/videos', $filename, 'public');
+        $file = $request->file("file");
+        $filename = Str::slug($request->title) . "-" . Str::random(6) . "." . $file->getClientOriginalExtension();
+        
+        // Save directly to Cloudflare R2
+        $path = $file->storeAs("media/videos", $filename, "r2");
 
         $video = Video::create([
-                        'file_path' => $path,
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            'is_published' => $request->boolean('is_published', true),
-            'is_featured' => $request->boolean('is_featured', false),
+            "file_path" => $path,
+            "is_published" => $request->boolean("is_published", true),
+            "is_featured" => $request->boolean("is_featured", false),
         ]);
 
         $video->translations()->create([
-            'locale' => 'en',
-            'title' => $request->title,
+            "locale" => "en",
+            "title" => $request->title,
         ]);
 
-        return redirect()->route('admin.videos.index')->with('success', 'Video uploaded.');
-    }
-
-    public function show(Video $video)
-    {
-        return view('admin.videos.show', compact('video'));
+        return redirect()->route("admin.videos.index")->with("success", "Video uploaded to Cloudflare R2 successfully.");
     }
 
     public function edit(Video $video)
     {
-        return view('admin.videos.form', compact('video'));
+        $video->load("translations");
+        return view("admin.videos.form", compact("video"));
     }
 
     public function update(Request $request, Video $video)
     {
         $request->validate([
-            'title' => 'required|string|max:191',
-            'file'  => 'nullable|file|mimes:mp4,webm,mov,ogg,avi,mkv|max:102400',
+            "title" => "required|string|max:255",
+            "file" => "nullable|file|mimes:mp4,mov,webm|max:102400",
         ]);
 
-        $data = [
-                        'is_published' => $request->boolean('is_published', $video->is_published),
-            'is_featured' => $request->boolean('is_featured', $video->is_featured),
-        ];
-
-        if ($request->hasFile('file')) {
-            Storage::disk('public')->delete($video->file_path);
-            $file = $request->file('file');
-            $name = Str::slug($request->title);
-            $ext = $file->getClientOriginalExtension();
-            $filename = $name . '-' . Str::random(6) . '.' . $ext;
-            $path = $file->storeAs('media/videos', $filename, 'public');
-            $data['file_path'] = $path;
-            $data['file_size'] = $file->getSize();
-            $data['mime_type'] = $file->getMimeType();
+        if ($request->hasFile("file")) {
+            $file = $request->file("file");
+            $filename = Str::slug($request->title) . "-" . Str::random(6) . "." . $file->getClientOriginalExtension();
+            $video->file_path = $file->storeAs("media/videos", $filename, "r2");
         }
 
-        $video->update($data);
-        return redirect()->route('admin.videos.index')->with('success', 'Video updated.');
+        $video->is_published = $request->boolean("is_published", true);
+        $video->is_featured = $request->boolean("is_featured", false);
+        $video->save();
+
+        $trans = $video->translations()->where("locale", "en")->first();
+        if ($trans) {
+            $trans->update(["title" => $request->title]);
+        } else {
+            $video->translations()->create(["locale" => "en", "title" => $request->title]);
+        }
+
+        return redirect()->route("admin.videos.index")->with("success", "Video updated.");
     }
 
     public function destroy(Video $video)
     {
-        Storage::disk('public')->delete($video->file_path);
         $video->delete();
-        return back()->with('success', 'Video deleted.');
-    }
-
-    public function togglePublish(Video $video)
-    {
-        $video->is_published = ! $video->is_published;
-        $video->save();
-        return back()->with('success', $video->is_published ? 'Video published.' : 'Video unpublished.');
-    }
-
-    public function toggleFeatured(Video $video)
-    {
-        $video->is_featured = ! $video->is_featured;
-        $video->save();
-        return back()->with('success', $video->is_featured ? 'Video featured.' : 'Video unfeatured.');
+        return back()->with("success", "Video deleted.");
     }
 }

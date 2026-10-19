@@ -19,7 +19,7 @@
                     @php
                         $t = $idea->translations->firstWhere('locale', 'en');
                         $img = $idea->cover_image
-                            ? (preg_match('#^https?://#i', $idea->cover_image) ? $idea->cover_image : asset('storage/' . ltrim($idea->cover_image, '/')))
+                            ? (preg_match('#^https?://#i', $idea->cover_image) ? $idea->cover_image : Storage::disk('r2')->url(ltrim($idea->cover_image, '/')))
                             : null;
                     @endphp
                     <a href="{{ route('public.ideas.show', $idea->slug) }}" class="card card-idea">

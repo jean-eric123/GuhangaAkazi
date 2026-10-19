@@ -16,7 +16,7 @@
                 @foreach($opportunities as $opp)
                     <div class="card">
                         <a href="{{ route('public.opportunities.show', $opp->slug ?? $opp->id) }}">
-                            @if($opp->cover_image)<img src="{{ asset('storage/' . $opp->cover_image) }}" class="card-img">@else<div class="card-img-placeholder"></div>@endif
+                            @if($opp->cover_image)<img src="{{ Storage::disk('r2')->url($opp->cover_image) }}" class="card-img">@else<div class="card-img-placeholder"></div>@endif
                         </a>
                         <div class="card-body">
                             <h3 class="card-title"><a href="{{ route('public.opportunities.show', $opp->slug ?? $opp->id) }}">{{ $opp->title ?? 'Untitled Opportunity' }}</a></h3>

@@ -14,7 +14,7 @@
             <div class="grid-cards">
                 @foreach($photos as $photo)
                     <div class="card">
-                        @php $img = $photo->file_path; $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null; @endphp
+                        @php $img = $photo->file_path; $src = $img ? (str_starts_with($img, "http") ? $img : Storage::disk("r2")->url($img)) : null; @endphp
                         @if($src)
                             <img src="{{ $src }}" class="card-img" loading="lazy">
                         @else

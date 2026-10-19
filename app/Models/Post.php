@@ -18,4 +18,9 @@ class Post extends Model
         if (!$trans) return "";
         return $trans->full_description ?? $trans->content ?? $trans->short_description ?? $trans->description ?? "";
     }
+
+    public function translations()
+    {
+        return $this->hasMany(PostTranslation::class, "post_id");
+    }
 }

@@ -20,7 +20,7 @@
                         <a href="{{ route('public.skills.show', $skill->slug ?? $skill->id) }}">
                             @php
                                 $img = $skill->cover_image;
-                                $src = $img ? (str_starts_with($img, "http") ? $img : asset("storage/" . $img)) : null;
+                                $src = $img ? (str_starts_with($img, "http") ? $img : Storage::disk("r2")->url($img)) : null;
                             @endphp
                             @if($src)
                                 <img src="{{ $src }}" class="card-img" loading="lazy">

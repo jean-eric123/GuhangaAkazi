@@ -1,47 +1,60 @@
-@extends('admin.layouts.app')
+@extends("admin.layouts.app")
+@section("content")
 @php
-    $isEdit = $video !== null;
-    $title = $isEdit ? 'Edit Video' : 'Upload Video';
-    $action = $isEdit ? route('admin.videos.update', $video) : route('admin.videos.store');
+    $isEdit = isset($video);
+    $title = $isEdit ? "Edit Video" : "Upload Video";
 @endphp
-@section('title', $title)
-@section('page_title', $title)
-@section('content')
-    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
-        <h2 class="page-title" style="margin:0;">{{ $title }}</h2>
-        <a href="{{ route('admin.videos.index') }}" style="color:var(--text-muted); text-decoration:none;">← Back</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <h1 style="font-size:1.5rem; font-weight:bold;">{{ $title }}</h1>
+    <a href="{{ route("admin.videos.index") }}" style="color:#6b7280; text-decoration:none; font-weight:500;">&larr; Back to Videos</a>
+</div>
+
+@if($errors->any())
+    <div style="background:#fee2e2; color:#b91c1c; padding:1rem; border-radius:0.375rem; margin-bottom:1rem;">
+        <ul style="margin:0; padding-left:1.5rem;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
-    @if ($errors->any())
-        <div class="alert alert-error"><ul style="margin:0; padding-left:1.25rem;">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
-    @endif
-    <form method="POST" action="{{ $action }}" enctype="multipart/form-data" style="background:#fff; padding:1.5rem; border-radius:12px;">
+@endif
+
+<div style="background:white; padding:2rem; border-radius:0.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); max-width:600px;">
+    <form action="{{ $isEdit ? route("admin.videos.update", $video) : route("admin.videos.store") }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @if($isEdit) @method('PUT') @endif
+        @if($isEdit)
+            @method("PUT")
+        @endif
 
-        <div style="margin-bottom:1rem;">
-            <label style="display:block; font-weight:600; margin-bottom:.3rem;">Title</label>
-            <input type="text" name="title" value="{{ old('title', $video?->title) }}" required style="width:100%; padding:.5rem .8rem; border:1px solid var(--border); border-radius:8px;">
+        <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Video Title</label>
+            <input type="text" name="title" value="{{ old("title", $isEdit ? $video->title : "") }}" required style="width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:0.375rem;">
         </div>
 
-        <div style="margin-bottom:1rem;">
-            <label style="display:block; font-weight:600; margin-bottom:.3rem;">Video File {{ $isEdit ? '(leave empty to keep current)' : '' }}</label>
-            <input type="file" name="file" accept="video/*" {{ $isEdit ? '' : 'required' }} style="width:100%; padding:.5rem; border:1px solid var(--border); border-radius:8px; background:#fff;">
+        <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Video File (MP4)</label>
+            @if($isEdit && $video->file_path)
+                <div style="margin-bottom:0.5rem; color:#059669; font-size:0.85rem; font-weight:600;">Current file: {{ basename($video->file_path) }}</div>
+            @endif
+            <input type="file" name="file" accept="video/mp4,video/quicktime" {{ $isEdit ? "" : "required" }} style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:0.375rem;">
+            <p style="font-size:0.75rem; color:#6b7280; margin-top:0.25rem;">Max 100MB. (Note: Codespaces has a 10MB upload limit. Large videos will work after real hosting).</p>
         </div>
 
-        <div style="margin-bottom:1rem; display:flex; flex-direction:column; gap:.5rem;">
-            <label style="display:flex; align-items:center; gap:.5rem; font-size:.9rem;">
-                <input type="checkbox" name="is_published" value="1" {{ old('is_published', $video?->is_published ?? true) ? 'checked' : '' }}>
+        <div style="margin-bottom:1.5rem; display:flex; gap:1.5rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500;">
+                <input type="checkbox" name="is_published" value="1" {{ old("is_published", $isEdit ? $video->is_published : true) ? "checked" : "" }}>
                 Publish immediately
             </label>
-            <label style="display:flex; align-items:center; gap:.5rem; font-size:.9rem;">
-                <input type="checkbox" name="is_featured" value="1" {{ old('is_featured', $video?->is_featured) ? 'checked' : '' }}>
+            <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500;">
+                <input type="checkbox" name="is_featured" value="1" {{ old("is_featured", $isEdit ? $video->is_featured : false) ? "checked" : "" }}>
                 Feature on Home Page
             </label>
         </div>
 
-        <div style="display:flex; gap:.5rem; flex-wrap:wrap; padding-top:1rem; border-top:1px solid var(--border);">
-            <button type="submit" style="background:var(--brand); color:#fff; padding:.7rem 1.5rem; border-radius:8px; border:0; font-weight:600; cursor:pointer;">{{ $isEdit ? 'Update Video' : 'Upload Video' }}</button>
-            <a href="{{ route('admin.videos.index') }}" style="padding:.7rem 1.5rem; border:1px solid var(--border); border-radius:8px; text-decoration:none; color:var(--text); font-weight:600;">Cancel</a>
+        <div style="display:flex; gap:1rem;">
+            <button type="submit" style="background:#0B6B4F; color:white; padding:0.75rem 2rem; border:none; border-radius:0.375rem; font-weight:600; cursor:pointer;">{{ $isEdit ? "Update Video" : "Upload Video" }}</button>
+            <a href="{{ route("admin.videos.index") }}" style="padding:0.75rem 1.5rem; border:1px solid #ccc; border-radius:0.375rem; text-decoration:none; color:#374151; font-weight:600;">Cancel</a>
         </div>
     </form>
+</div>
 @endsection

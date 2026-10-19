@@ -3,296 +3,117 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Idea;
+use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class IdeaController extends Controller
 {
-    public function index(Request $request)
+    private function makeUniqueSlug($slug, $title, $ignoreId = null)
     {
-        $query = Idea::query()->with(['category.translations', 'translations']);
-
-        if ($search = trim((string) $request->get('q'))) {
-            $query->where(function ($q) use ($search) {
-                $q->where('slug', 'like', "%{$search}%")
-                  ->orWhereHas('translations', function ($t) use ($search) {
-                      $t->where('title', 'like', "%{$search}%");
-                  });
-            });
+        $base = Str::slug($slug ?: $title);
+        $slug = $base;
+        $i = 1;
+        while (Idea::where("slug", $slug)->when($ignoreId, fn($q) => $q->where("id", "!=", $ignoreId))->exists()) {
+            $slug = $base . "-" . $i++;
         }
-        if ($cat = $request->get('category')) $query->where('category_id', $cat);
-        if ($status = $request->get('status')) {
-            if ($status === 'published') $query->where('is_published', true);
-            elseif ($status === 'draft') $query->where('is_published', false);
-            elseif ($status === 'featured') $query->where('is_featured', true);
-        }
+        return $slug;
+    }
 
-        $ideas = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
-        $categories = Category::with('translations')->where('type', 'idea')->orderBy('sort_order')->get();
-        return view('admin.ideas.index', compact('ideas', 'categories'));
+    public function index()
+    {
+        $ideas = Idea::with("translations", "category")->latest()->paginate(15);
+        $categories = Category::all();
+        return view("admin.ideas.index", compact("ideas", "categories"));
     }
 
     public function create()
     {
-        $categories = Category::with('translations')->where('type', 'idea')->orderBy('sort_order')->get();
-        return response()->view('admin.ideas.form', [
-            'categories' => $categories,
-            'idea'       => null,
-            'en'         => null,
-        ])->withHeaders(['Cache-Control' => 'no-store']);
+        $categories = Category::with("translations")->get();
+        $idea = null;
+        $en = null;
+        return view("admin.ideas.form", compact("categories", "idea", "en"));
     }
 
     public function store(Request $request)
     {
-        $data = $this->validateIdea($request);
-        $slug = $this->makeUniqueSlug($data['slug'] ?? '', $data['en_title'] ?? '', null);
+        $data = $request->all();
+        $slug = $this->makeUniqueSlug($data["slug"] ?? "", $data["en_title"] ?? "", null);
 
         DB::transaction(function () use ($data, $request, $slug) {
             $idea = new Idea();
-            $this->fillIdea($idea, $data, $request, $slug);
+            $idea->category_id = $data["category_id"] ?? null;
+            $idea->slug = $slug;
+            $idea->cover_image = $data["cover_image"] ?? null;
+            $idea->video_url = $data["video_url"] ?? null;
+            $idea->capital = $data["capital"] ?? null;
+            $idea->expected_profit = $data["expected_profit"] ?? null;
+            $idea->currency = $data["currency"] ?? "RWF";
+            $idea->difficulty_level = $data["difficulty_level"] ?? null;
+            $idea->time_to_start = $data["time_to_start"] ?? null;
+            $idea->operating_costs = $data["operating_costs"] ?? null;
+            $idea->expected_revenue = $data["expected_revenue"] ?? null;
+            $idea->is_featured = $request->boolean("is_featured");
+            $idea->is_published = $request->boolean("is_published");
+            $idea->published_at = $idea->is_published ? now() : null;
             $idea->save();
 
             $idea->translations()->create([
-                'locale'            => 'en',
-                'title'             => $data['en_title'],
-                'short_description' => $data['en_short_description'] ?? null,
-                'full_description'  => $data['en_full_description'] ?? null,
-                'steps'             => $data['en_steps'] ?? null,
-                'requirements'      => $data['en_requirements'] ?? null,
-                'tips'              => $data['en_tips'] ?? null,
+                "locale" => "en",
+                "title" => $data["en_title"],
+                "short_description" => $data["en_short_description"] ?? null,
+                "full_description" => $data["en_full_description"] ?? null,
+                "steps" => $data["en_steps"] ?? null,
+                "requirements" => $data["en_requirements"] ?? null,
+                "tips" => $data["en_tips"] ?? null,
             ]);
-
-            $this->attachPhotos($idea, $request);
-            $this->attachVideos($idea, $request);
         });
 
-        return redirect()->route('admin.ideas.create')
-            ->with('success', 'Idea created. You can add another one below.');
-    }
-
-    public function show(Idea $idea)
-    {
-        $idea->load(['category.translations', 'translations']);
-        $photos = DB::table('photo_attachments')
-            ->join('photos', 'photos.id', '=', 'photo_attachments.photo_id')
-            ->where('photo_attachments.attachable_type', Idea::class)
-            ->where('photo_attachments.attachable_id', $idea->id)
-            ->select('photos.*')
-            ->orderBy('photo_attachments.sort_order')
-            ->get();
-
-                $videos = DB::table('video_attachments')
-            ->join('videos', 'videos.id', '=', 'video_attachments.video_id')
-            ->where('video_attachments.attachable_type', Idea::class)
-            ->where('video_attachments.attachable_id', $idea->id)
-            ->select('videos.*')
-            ->orderBy('video_attachments.sort_order')
-            ->get();
-
-        return view('admin.ideas.show', compact('idea', 'photos', 'videos'));
+        return redirect()->route("admin.ideas.index")->with("success", "Idea created successfully.");
     }
 
     public function edit(Idea $idea)
     {
-        $idea->load(['category.translations', 'translations']);
-        $categories = Category::with('translations')->where('type', 'idea')->orderBy('sort_order')->get();
-        $en = $idea->translations->firstWhere('locale', 'en');
-
-        // Existing photos for this idea
-        $photos = DB::table('photo_attachments')
-            ->join('photos', 'photos.id', '=', 'photo_attachments.photo_id')
-            ->where('photo_attachments.attachable_type', Idea::class)
-            ->where('photo_attachments.attachable_id', $idea->id)
-            ->select('photos.id', 'photos.file_path')
-            ->orderBy('photo_attachments.sort_order')
-            ->get();
-
-        return response()->view('admin.ideas.form', [
-            'categories' => $categories,
-            'idea'       => $idea,
-            'en'         => $en,
-            'existingPhotos' => $photos,
-        ])->withHeaders(['Cache-Control' => 'no-store']);
+        $idea->load("translations");
+        $categories = Category::with("translations")->get();
+        $en = $idea->translations->where("locale", "en")->first();
+        return view("admin.ideas.form", compact("idea", "categories", "en"));
     }
 
     public function update(Request $request, Idea $idea)
     {
-        $data = $this->validateIdea($request);
-        $slug = $this->makeUniqueSlug($data['slug'] ?? '', $data['en_title'] ?? '', $idea->id);
+        $data = $request->all();
+        $slug = $this->makeUniqueSlug($data["slug"] ?? "", $data["en_title"] ?? "", $idea->id);
 
-        DB::transaction(function () use ($idea, $data, $request, $slug) {
-            $this->fillIdea($idea, $data, $request, $slug);
+        DB::transaction(function () use ($data, $request, $idea, $slug) {
+            $idea->category_id = $data["category_id"] ?? null;
+            $idea->slug = $slug;
+            if (isset($data["cover_image"])) $idea->cover_image = $data["cover_image"];
+            $idea->video_url = $data["video_url"] ?? null;
+            $idea->capital = $data["capital"] ?? null;
+            $idea->expected_profit = $data["expected_profit"] ?? null;
+            $idea->is_featured = $request->boolean("is_featured");
+            $idea->is_published = $request->boolean("is_published");
             $idea->save();
 
-            $idea->translations()->updateOrCreate(
-                ['locale' => 'en'],
-                [
-                    'title'             => $data['en_title'],
-                    'short_description' => $data['en_short_description'] ?? null,
-                    'full_description'  => $data['en_full_description'] ?? null,
-                    'steps'             => $data['en_steps'] ?? null,
-                    'requirements'      => $data['en_requirements'] ?? null,
-                    'tips'              => $data['en_tips'] ?? null,
-                ]
-            );
-
-            $this->attachPhotos($idea, $request);
-            $this->attachVideos($idea, $request);
+            $trans = $idea->translations()->where("locale", "en")->first();
+            if ($trans) {
+                $trans->update([
+                    "title" => $data["en_title"],
+                    "short_description" => $data["en_short_description"] ?? null,
+                    "full_description" => $data["en_full_description"] ?? null,
+                ]);
+            }
         });
 
-        return redirect()->route('admin.ideas.show', $idea)
-            ->with('success', 'Idea updated successfully.');
+        return redirect()->route("admin.ideas.index")->with("success", "Idea updated.");
     }
 
     public function destroy(Idea $idea)
     {
-        DB::transaction(function () use ($idea) {
-            // Remove attachments (photos stay in the media library)
-            DB::table('photo_attachments')
-                ->where('attachable_type', Idea::class)
-                ->where('attachable_id', $idea->id)
-                ->delete();
-
-            $idea->delete();
-        });
-
-        return redirect()->route('admin.ideas.index')
-            ->with('success', 'Idea deleted.');
-    }
-
-    public function togglePublish(Idea $idea)
-    {
-        $idea->is_published = ! $idea->is_published;
-        $idea->published_at = $idea->is_published ? ($idea->published_at ?: now()) : null;
-        $idea->save();
-        return back()->with('success', $idea->is_published ? 'Idea published.' : 'Idea unpublished.');
-    }
-
-    public function toggleFeatured(Idea $idea)
-    {
-        $idea->is_featured = ! $idea->is_featured;
-        $idea->save();
-        return back()->with('success', $idea->is_featured ? 'Idea featured.' : 'Idea unfeatured.');
-    }
-
-    /* ------------------------------------------------------------------ */
-
-    protected function fillIdea(Idea $idea, array $data, Request $request, string $slug): void
-    {
-        $idea->fill([
-            'category_id'      => $data['category_id'] ?? null,
-            'slug'             => $slug,
-            'cover_image'      => $data['cover_image'] ?? null,
-            'video_url'        => $data['video_url'] ?? null,
-            'capital'          => $data['capital'] ?? null,
-            'expected_profit'  => $data['expected_profit'] ?? null,
-            'currency'         => $data['currency'] ?? 'RWF',
-            'difficulty_level' => $data['difficulty_level'] ?? null,
-            'time_to_start'    => $data['time_to_start'] ?? null,
-            'operating_costs'  => $data['operating_costs'] ?? null,
-            'expected_revenue' => $data['expected_revenue'] ?? null,
-            'is_featured'      => $request->boolean('is_featured'),
-            'is_published'     => $request->boolean('is_published'),
-            'published_at'     => $request->boolean('is_published')
-                                    ? ($idea->published_at ?: now())
-                                    : null,
-        ]);
-    }
-
-    protected function validateIdea(Request $request): array
-    {
-        return $request->validate([
-            'slug'              => ['nullable', 'string', 'max:191'],
-            'category_id'       => ['nullable', 'integer', 'exists:categories,id'],
-            'cover_image'       => ['nullable', 'string', 'max:500'],
-            'capital'           => ['nullable', 'numeric', 'min:0'],
-            'expected_profit'   => ['nullable', 'numeric'],
-            'currency'          => ['nullable', 'string', 'max:10'],
-            'difficulty_level'  => ['nullable', 'in:easy,medium,hard'],
-            'time_to_start'     => ['nullable', 'string', 'max:191'],
-            'operating_costs'   => ['nullable', 'numeric'],
-            'expected_revenue'  => ['nullable', 'numeric'],
-            'is_featured'       => ['nullable', 'boolean'],
-            'is_published'      => ['nullable', 'boolean'],
-            'en_title'             => ['required', 'string', 'max:191'],
-            'video_url'            => ['nullable', 'url', 'max:500'],
-            'en_short_description' => ['nullable', 'string'],
-            'en_full_description'  => ['nullable', 'string'],
-            'en_steps'             => ['nullable', 'string'],
-            'en_requirements'      => ['nullable', 'string'],
-            'en_tips'              => ['nullable', 'string'],
-            'photo_ids'            => ['nullable', 'array'],
-            'photo_ids.*'          => ['integer', 'exists:photos,id'],
-        ]);
-    }
-
-    protected function makeUniqueSlug(string $slug, string $title, ?int $ignoreId = null): string
-    {
-        $base = $slug !== '' ? $slug : $title;
-        $base = Str::slug($base);
-        if ($base === '') $base = 'idea';
-
-        $candidate = $base;
-        $i = 1;
-        while (
-            Idea::where('slug', $candidate)
-                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
-                ->exists()
-        ) {
-            $i++;
-            $candidate = $base . '-' . $i;
-        }
-        return $candidate;
-    }
-
-    protected function attachPhotos(Idea $idea, Request $request): void
-    {
-        $ids = $request->input('photo_ids', []);
-        if (! is_array($ids) || empty($ids)) return;
-
-        foreach ($ids as $index => $photoId) {
-            $photoId = (int) $photoId;
-            if ($photoId <= 0) continue;
-
-            DB::table('photo_attachments')->updateOrInsert(
-                [
-                    'photo_id'        => $photoId,
-                    'attachable_type' => Idea::class,
-                    'attachable_id'   => $idea->id,
-                ],
-                [
-                    'sort_order' => $index,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        }
-    }
-
-    protected function attachVideos(Idea $idea, Request $request): void
-    {
-        $ids = $request->input('video_ids', []);
-        if (! is_array($ids) || empty($ids)) return;
-
-        foreach ($ids as $index => $videoId) {
-            $videoId = (int) $videoId;
-            if ($videoId <= 0) continue;
-
-            \DB::table('video_attachments')->updateOrInsert(
-                [
-                    'video_id' => $videoId,
-                    'attachable_type' => Idea::class,
-                    'attachable_id' => $idea->id,
-                ],
-                [
-                    'sort_order' => $index,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        }
+        $idea->delete();
+        return back()->with("success", "Idea deleted.");
     }
 }

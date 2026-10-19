@@ -16,7 +16,7 @@ class SkillController extends Controller
     public function create() { return view("admin.skills.form"); }
     public function store(Request $request) {
         $request->validate(["title" => "required|string|max:255"]);
-        $path = $request->hasFile("cover_image") ? $request->file("cover_image")->store("skills", "public") : null;
+        $path = $request->hasFile("cover_image") ? $request->file("cover_image")->store("skills", "r2") : null;
         $skill = Skill::create(["slug" => Str::slug($request->title) . "-" . Str::random(5), "cover_image" => $path, "is_published" => $request->boolean("is_published", true)]);
         $skill->translations()->create(["locale" => "en", "title" => $request->title, "short_description" => $request->description]);
 
@@ -32,7 +32,7 @@ class SkillController extends Controller
     }
     public function update(Request $request, Skill $skill) {
         $request->validate(["title" => "required|string|max:255"]);
-        if ($request->hasFile("cover_image")) { $skill->cover_image = $request->file("cover_image")->store("skills", "public"); }
+        if ($request->hasFile("cover_image")) { $skill->cover_image = $request->file("cover_image")->store("skills", "r2"); }
         $skill->is_published = $request->boolean("is_published", true);
         $skill->save();
         $trans = $skill->translations()->where("locale", "en")->first();
