@@ -4,32 +4,28 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Idea;
-use App\Models\Photo;
 use App\Models\Video;
+use App\Models\Photo;
+use App\Models\Post;
+use App\Models\Skill;
+use App\Models\Opportunity;
+use App\Models\Setting;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $featuredIdeas = Idea::with("translations")
-            ->where("is_featured", true)
-            ->where("is_published", true)
-            ->latest()
-            ->take(6)
-            ->get();
+        // Fetch latest items for ALL 6 categories
+        $v = Video::latest()->take(4)->get();
+        $i = Idea::latest()->take(4)->get();
+        $p = Photo::latest()->take(4)->get();
+        $articles = Post::latest()->take(4)->get();
+        $skills = Skill::latest()->take(4)->get();
+        $opportunities = Opportunity::latest()->take(4)->get();
+        
+        // Fetch Admin Settings (Social Media Links)
+        $s = Setting::pluck('value', 'key')->all();
 
-        $photos = Photo::with("translations")
-            ->where("is_published", true)
-            ->latest()
-            ->take(6)
-            ->get();
-
-        $videos = Video::with("translations")
-            ->where("is_published", true)
-            ->latest()
-            ->take(6)
-            ->get();
-
-        return view("public.home", compact("featuredIdeas", "photos", "videos"));
+        return view('public.home', compact('v', 'i', 'p', 'articles', 'skills', 'opportunities', 's'));
     }
 }

@@ -1,47 +1,17 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-class Idea extends Model
-{
+class Idea extends Model {
     use HasFactory, SoftDeletes;
-
     protected $guarded = [];
+    public function translations() { return $this->hasMany(IdeaTranslation::class); }
+    public function getTitleAttribute() { $t = $this->translations->where("locale", "en")->first(); return $t ? $t->title : "Untitled"; }
+    public function getDescriptionAttribute() { $t = $this->translations->where("locale", "en")->first(); return $t ? ($t->description ?? "") : ""; }
 
-    public function translations()
-    {
-        return $this->hasMany(IdeaTranslation::class);
-    }
 
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function getTitleAttribute()
-    {
-        $trans = $this->translations->where("locale", "en")->first();
-        if ($trans && $trans->title) return $trans->title;
-        $anyTrans = $this->translations->whereNotNull("title")->where("title", "!=", "")->first();
-        return $anyTrans ? $anyTrans->title : "Untitled Idea";
-    }
-
-    
-
-    
-
-    
-
-    
-
-    public function getDescriptionAttribute()
-    {
-        $trans = $this->translations->where("locale", "en")->first() ?? $this->translations->first();
-        if (!$trans) return "";
-        return $trans->full_description ?? $trans->content ?? $trans->short_description ?? $trans->description ?? "";
+    public function category() {
+        return $this->belongsTo(\App\Models\Category::class);
     }
 }

@@ -14,7 +14,12 @@
         </div>
         <div style="margin-bottom:1rem;">
             <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Select Image</label>
-            <input type="file" name="image" accept="image/*" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:0.375rem;">
+            
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Or Paste Link (Cloudflare/YouTube)</label>
+            <input type="text" name="file_url" placeholder="https://..." style="width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:4px;">
+        </div>
+<input type="file" name="image" accept="image/*" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:0.375rem;">
         </div>
         <div style="margin-bottom:1.5rem;">
             <label><input type="checkbox" name="is_published" value="1" checked> Publish this photo</label>

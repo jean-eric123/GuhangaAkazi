@@ -46,7 +46,7 @@ class IdeaController extends Controller
             $idea = new Idea();
             $idea->category_id = $data["category_id"] ?? null;
             $idea->slug = $slug;
-            $idea->cover_image = $data["cover_image"] ?? null;
+            $idea->cover_image = $request->input("cover_image_url") ?? $request->input("cover_image") ?? ($request->hasFile("cover_image") ? $request->file("cover_image")->store("ideas", "r2") : null);
             $idea->video_url = $data["video_url"] ?? null;
             $idea->capital = $data["capital"] ?? null;
             $idea->expected_profit = $data["expected_profit"] ?? null;
@@ -90,7 +90,7 @@ class IdeaController extends Controller
         DB::transaction(function () use ($data, $request, $idea, $slug) {
             $idea->category_id = $data["category_id"] ?? null;
             $idea->slug = $slug;
-            if (isset($data["cover_image"])) $idea->cover_image = $data["cover_image"];
+            if (isset($data["cover_image"])) $idea->cover_image = $request->input("cover_image_url") ?? $request->input("cover_image") ?? ($request->hasFile("cover_image") ? $request->file("cover_image")->store("ideas", "r2") : null);
             $idea->video_url = $data["video_url"] ?? null;
             $idea->capital = $data["capital"] ?? null;
             $idea->expected_profit = $data["expected_profit"] ?? null;
@@ -113,7 +113,10 @@ class IdeaController extends Controller
 
     public function destroy(Idea $idea)
     {
-        $idea->delete();
+        $idea->forceDelete();
         return back()->with("success", "Idea deleted.");
     }
+
+    public function togglePublish(Idea $idea) { $idea->is_published = !$idea->is_published; $idea->save(); return back()->with("success", "Status updated."); }
+    public function toggleFeatured(Idea $idea) { $idea->is_featured = !$idea->is_featured; $idea->save(); return back()->with("success", "Feature updated."); }
 }

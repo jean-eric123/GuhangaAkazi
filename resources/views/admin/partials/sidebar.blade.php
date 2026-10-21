@@ -34,7 +34,7 @@
             Skills
         </a>
 
-        <a href="{{ route('admin.opportunities') }}"
+        <a href="{{ route('admin.opportunities.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.opportunities') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="16" rx="2"/>
@@ -43,7 +43,7 @@
             Opportunities
         </a>
 
-        <a href="{{ route('admin.articles') }}"
+        <a href="{{ route('admin.posts.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.articles') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4h16v12H4z"/><path d="M8 20h8M12 16v4"/>
@@ -71,15 +71,15 @@
 
         <div class="sidebar-section">Organize</div>
 
-        <a href="{{ route('admin.categories') }}"
-           class="sidebar-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
+        <a href="{{ route('admin.categories.index') }}"
+           class="sidebar-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/>
             </svg>
             Categories
         </a>
 
-        <a href="{{ route('admin.comments') }}"
+        <a href="{{ route('admin.comments.index') }}"
            class="sidebar-link {{ request()->routeIs('admin.comments') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
@@ -90,7 +90,7 @@
         <div class="sidebar-section">Inbox</div>
 
         <a href="{{ route('admin.messages') }}"
-           class="sidebar-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}">
+           class="sidebar-link {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="5" width="18" height="14" rx="2"/>
                 <path d="M3 7l9 6 9-6"/>
@@ -110,7 +110,7 @@
         </a>
 
         <a href="{{ route('admin.profile') }}"
-           class="sidebar-link {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
+           class="sidebar-link {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 016-6h4a6 6 0 016 6v2"/>
             </svg>

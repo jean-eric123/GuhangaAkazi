@@ -15,7 +15,12 @@
         </div>
         <div style="margin-bottom:1rem;">
             <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Cover Image</label>
-            <input type="file" name="cover_image" style="width:100%;">
+            
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; font-weight:bold; margin-bottom:0.5rem;">Or Paste Link (Cloudflare/YouTube)</label>
+            <input type="text" name="cover_image_url" placeholder="https://..." style="width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:4px;">
+        </div>
+<input type="file" name="cover_image" style="width:100%;">
         </div>
         <div style="margin-bottom:1rem;">
             <label><input type="checkbox" name="is_published" value="1" {{ old('is_published', $skill->is_published ?? true) ? 'checked' : '' }}> Publish</label>

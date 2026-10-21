@@ -1,48 +1,17 @@
 @extends("public.layouts.app")
 @section("content")
-<div class="bg-light" style="padding: 3rem 0; border-bottom: 1px solid #e5e7eb;">
-    <div class="container">
-        <div style="margin-bottom: 1rem;">
-            <a href="{{ route("public.ideas") }}" style="color: #0B6B4F; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Back to Ideas
-            </a>
-        </div>
-        <h1 style="font-size: 2.2rem; font-weight: 800; color: #064e3b; margin-bottom: 0.5rem; line-height: 1.2;">{{ $idea->title ?? "Untitled Idea" }}</h1>
+<div style="max-width: 800px; margin: 4rem auto; padding: 0 1rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem; line-height: 1.2;">{{ $idea->translations->first()?->title ?? 'Idea' }}</h1>
+    
+    @if($idea->image_path ?? $idea->image ?? false)
+    <img src="{{ Storage::disk('r2')->url($idea->image_path ?? $idea->image) }}" style="width: 100%; border-radius: 12px; margin-bottom: 2rem; object-fit: cover; max-height: 400px; border: 1px solid #e2e8f0;">
+    @endif
+    
+    <div style="line-height: 1.8; font-size: 1.15rem; color: #334155; margin-bottom: 2rem;">
+        {!! nl2br(e($idea->translations->first()?->description ?? $idea->translations->first()?->body ?? '')) !!}
     </div>
-</div>
-<div class="section">
-    <div class="container" style="max-width: 800px; margin: 0 auto;">
-        @php
-            $img = $idea->cover_image;
-            $src = $img ? (str_starts_with($img, "http") ? $img : Storage::disk("r2")->url($img)) : null;
-        @endphp
-        @if($src)
-            <img src="{{ $src }}" style="width: 100%; border-radius: 0.5rem; margin-bottom: 2rem; object-fit: cover; max-height: 400px;" onerror="this.src='https://via.placeholder.com/600x400?text=Image+Not+Available'">
-        @endif
-
-        @php
-            $desc = $idea->description ?? "No description provided yet.";
-        @endphp
-
-        <div style="font-size: 1.15rem; line-height: 1.8; color: #374151;">
-            <span id="short-desc">{!! nl2br(e(Str::limit($desc, 250))) !!}</span>
-            <span id="full-desc" style="display: none;">{!! nl2br(e($desc)) !!}</span>
-            
-            @if(strlen($desc) > 250)
-                <a href="javascript:void(0)" onclick="document.getElementById('short-desc').style.display='none'; document.getElementById('full-desc').style.display='inline'; this.style.display='none';" style="color: #0B6B4F; font-weight: 700; text-decoration: none; display: block; margin-top: 0.5rem;">Read more...</a>
-            @endif
-        </div>
-
-        <div class="card" style="margin-top: 2rem; padding: 1.5rem; background: #f0fdf4; border: 1px solid #dcfce7;">
-            <h3 style="margin-top: 0; color: #064e3b; font-size: 1.25rem; margin-bottom: 1.5rem;">Business Details</h3>
-            @if($idea->capital)
-                <div class="detail-row"><strong>Starting Capital:</strong> <span style="color: #0B6B4F; font-weight: 700;">{{ $currency ?? "RWF" }} {{ number_format($idea->capital) }}</span></div>
-            @endif
-            @if($idea->expected_profit)
-                <div class="detail-row"><strong>Expected Profit:</strong> <span style="color: #0B6B4F; font-weight: 700;">{{ $currency ?? "RWF" }} {{ number_format($idea->expected_profit) }}</span></div>
-            @endif
-        </div>
-    </div>
+    
+    <!-- Engagement Section (Views, Likes, Comments) -->
+    @include('public.partials.engagement', ['type' => 'idea', 'item' => $idea])
 </div>
 @endsection

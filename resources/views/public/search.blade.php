@@ -1,42 +1,22 @@
-@extends('public.layouts.app')
+@extends("public.layouts.app")
+@section("content")
+<div class="container" style="padding: 4rem 1rem; max-width: 900px; margin: 0 auto;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: #064e3b; margin-bottom: 2rem; text-align: center;">Search</h1>
 
-@section('content')
-<div class="container" style="max-width: 600px; margin: 2rem auto; padding: 0 1rem;">
-    <!-- Search Bar (Instagram Style) -->
-    <form action="{{ route('public.search') }}" method="GET" style="background: #efefef; border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;" onsubmit="return false;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="live-search-input" name="q" value="{{ request('q') }}" placeholder="Search" style="border: none; background: transparent; outline: none; width: 100%; font-size: 1rem; color: #262626;" autofocus autocomplete="off">
-    </form>
+    @if(isset($q) && $q != '')
+        <p style="text-align: center; color: #6b7280; margin-bottom: 3rem;">Showing results for: <strong style="color: #111827;">"{{ $q }}"</strong></p>
+    @else
+        <p style="text-align: center; color: #6b7280; margin-bottom: 3rem;">Enter a keyword to search ideas, skills, and opportunities.</p>
+        <form action="{{ route('public.search') }}" method="GET" style="display: flex; gap: 0.5rem; max-width: 600px; margin: 0 auto 3rem auto;">
+            <input type="text" name="q" placeholder="Search..." style="flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; outline: none;" required>
+            <button type="submit" style="background: #0B6B4F; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Search</button>
+        </form>
+    @endif
 
-    <!-- Results Container -->
-    <div id="search-results-container">
-        @include('public.partials.search-results', ['q' => request('q'), 'ideas' => $ideas ?? collect(), 'skills' => $skills ?? collect(), 'opportunities' => $opportunities ?? collect(), 'videos' => $videos ?? collect()])
+    <div id="search-results">
+        @if(isset($q) && $q != '')
+            @include('public.partials.search-results')
+        @endif
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const input = document.getElementById('live-search-input');
-        const resultsContainer = document.getElementById('search-results-container');
-        let timeout = null;
-
-        input.addEventListener('input', function() {
-            clearTimeout(timeout);
-            const query = this.value.trim();
-
-            timeout = setTimeout(() => {
-                fetch(`{{ route('public.search') }}?q=${encodeURIComponent(query)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    resultsContainer.innerHTML = data.html;
-                })
-                .catch(error => console.error('Error:', error));
-            }, 300); // Wait 300ms after user stops typing
-        });
-    });
-</script>
-@stop
+@endsection

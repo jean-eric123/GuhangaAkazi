@@ -1,28 +1,66 @@
-<header class="pub-header">
-    <div class="container pub-header-inner">
-        <a href="{{ url('/') }}" class="pub-logo">
-            <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6B4F"/><path d="M8 22V16M13 22V12M18 22V18M23 22V9" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
-            <span class="pub-logo-text">Guhanga<span style="color: #0B6B4F;">Akazi</span></span>
+<style>
+    .ga-header { background-color: #ffffff; color: #0f172a; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-bottom: 1px solid #e2e8f0; }
+    .ga-container { max-width: 1200px; margin: 0 auto; padding: 0.75rem 1rem; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .ga-logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: #0B6B4F; font-weight: 800; font-size: 1.4rem; white-space: nowrap; }
+    .ga-logo-icon { background: #0B6B4F; color: white; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    
+    .ga-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .ga-icon-btn { background: none; border: none; color: #0f172a; cursor: pointer; padding: 0.5rem; display: flex; align-items: center; justify-content: center; }
+    
+    /* Search Dropdown */
+    .search-overlay { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 999; }
+    .search-overlay.active { display: block; }
+    .search-input-wrapper { max-width: 600px; margin: 0 auto; display: flex; align-items: center; background: #f1f5f9; border-radius: 8px; overflow: hidden; }
+    .search-input-wrapper input { flex-grow: 1; padding: 0.75rem 1rem; border: none; outline: none; background: transparent; font-size: 0.95rem; }
+    .search-input-wrapper button { background: transparent; border: none; padding: 0 1rem; color: #64748b; cursor: pointer; }
+    #live-search-results { max-width: 600px; margin: 0.5rem auto 0; max-height: 300px; overflow-y: auto; background: white; border-radius: 8px; }
+    .search-result-item { display: block; padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: #0f172a; }
+    .search-result-item:hover { background: #f8fafc; }
+    
+    .ga-nav { background-color: #ffffff; border-top: 1px solid #e2e8f0; display: none; width: 100%; }
+    .ga-nav.active { display: block; }
+    .ga-nav-links { max-width: 1200px; margin: 0 auto; padding: 0.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .ga-nav-links a { color: #475569; text-decoration: none; font-weight: 600; padding: 0.5rem 0.75rem; display: flex; align-items: center; border-radius: 6px; font-size: 0.95rem; }
+    .ga-nav-links a:hover { color: #0B6B4F; background: #f1f5f9; }
+
+    @media (max-width: 767px) {
+        .ga-nav-links { flex-direction: column; align-items: flex-start; }
+        .ga-nav-links a { width: 100%; padding: 0.8rem 0.5rem; border-bottom: 1px solid #f1f5f9; }
+    }
+    @media (min-width: 768px) { .ga-nav { display: block !important; border-top: none; background: transparent; width: auto; } .ga-nav-links { padding: 0; } }
+</style>
+
+<header class="ga-header" style="position: relative;">
+    <div class="ga-container">
+        <a href="{{ route('public.home') }}" class="ga-logo">
+            <div class="ga-logo-icon">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </div>
+            GuhangaAkazi
         </a>
 
-        {{-- Desktop Search --}}
-        <form action="{{ route('public.search') }}" method="GET" class="pub-search-desktop">
-            <input type="text" name="q" placeholder="Search..." value="{{ request('q') }}">
-            <button type="submit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></button>
-        </form>
-
-        <!-- Mobile Actions -->
-        <div class="pub-mobile-actions">
-            <a href="{{ route('public.search') }}" class="pub-mobile-search-icon" aria-label="Search">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
-            </a>
-            <button class="pub-mobile-toggle" id="pubMenuToggle" aria-label="Menu">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <div class="ga-actions">
+            <button class="ga-icon-btn" onclick="toggleSearch()">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+            <button class="ga-icon-btn" onclick="document.getElementById('ga-mobile-menu').classList.toggle('active')">
+                <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
         </div>
+    </div>
 
-        <nav class="pub-nav" id="pubNav">
-            <a href="{{ url('/') }}" class="nav-icon-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Home</a>
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="search-overlay">
+        <div class="search-input-wrapper">
+            <input type="text" id="live-search-input" placeholder="Search ideas, skills..." autocomplete="off">
+            <button onclick="document.getElementById('search-overlay').classList.remove('active')">✕</button>
+        </div>
+        <div id="live-search-results"></div>
+    </div>
+
+    <nav id="ga-mobile-menu" class="ga-nav">
+        <div class="ga-nav-links">
+            <a href="{{ route('public.home') }}">Home</a>
             <a href="{{ route('public.ideas') }}">Ideas</a>
             <a href="{{ route('public.skills') }}">Skills</a>
             <a href="{{ route('public.opportunities') }}">Opportunities</a>
@@ -31,23 +69,32 @@
             <a href="{{ route('public.videos') }}">Videos</a>
             <a href="{{ route('public.about') }}">About Us</a>
             <a href="{{ route('public.contact') }}">Contact Us</a>
-        </nav>
-    </div>
+        </div>
+    </nav>
 </header>
 
 <script>
-    (function() {
-        var t = document.getElementById('pubMenuToggle');
-        var n = document.getElementById('pubNav');
-        if (t && n) {
-            t.addEventListener('click', function (e) { e.stopPropagation(); n.classList.toggle('open'); });
-            document.addEventListener('click', function(e) {
-                if (n.classList.contains('open') && !n.contains(e.target) && !t.contains(e.target)) n.classList.remove('open');
-            });
-            // Fix: Automatically close the menu when rotating to landscape
-            window.addEventListener('orientationchange', function() {
-                n.classList.remove('open');
-            });
+    function toggleSearch() {
+        document.getElementById('search-overlay').classList.toggle('active');
+        if(document.getElementById('search-overlay').classList.contains('active')) {
+            document.getElementById('live-search-input').focus();
         }
-    })();
+    }
+
+    let searchTimeout;
+    document.getElementById('live-search-input').addEventListener('keyup', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value;
+        const resultsContainer = document.getElementById('live-search-results');
+        
+        if(query.length < 2) { resultsContainer.innerHTML = ''; return; }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`{{ route('public.search') }}?q=${encodeURIComponent(query)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => { resultsContainer.innerHTML = data.html; });
+        }, 300);
+    });
 </script>

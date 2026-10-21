@@ -90,6 +90,11 @@
         </label>
     </div>
 
+    
+        <div style="margin-bottom:1.5rem; background:#f0fdf4; padding:1rem; border-radius:8px; border:1px solid #dcfce7;">
+            <label style="display:block; font-weight:bold; margin-bottom:0.5rem; color:#064e3b;">Or Paste Image URL (Cloudflare/YouTube)</label>
+            <input type="url" name="cover_image_url" placeholder="https://pub-xxxx.r2.dev/..." style="width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:4px;">
+        </div>
     <button type="submit" style="background:#0B6B4F; color:white; padding:0.75rem 2rem; border:none; border-radius:0.375rem; font-weight:600; cursor:pointer; font-size:1rem;">Save Idea</button>
 </form>
 

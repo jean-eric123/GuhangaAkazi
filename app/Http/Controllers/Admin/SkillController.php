@@ -16,7 +16,7 @@ class SkillController extends Controller
     public function create() { return view("admin.skills.form"); }
     public function store(Request $request) {
         $request->validate(["title" => "required|string|max:255"]);
-        $path = $request->hasFile("cover_image") ? $request->file("cover_image")->store("skills", "r2") : null;
+        $path = $request->input("cover_image_url") ?? ($request->hasFile("cover_image") ? $request->file("cover_image")->store("skills", "r2") : null);
         $skill = Skill::create(["slug" => Str::slug($request->title) . "-" . Str::random(5), "cover_image" => $path, "is_published" => $request->boolean("is_published", true)]);
         $skill->translations()->create(["locale" => "en", "title" => $request->title, "short_description" => $request->description]);
 
@@ -46,7 +46,7 @@ class SkillController extends Controller
         return redirect()->route("admin.skills.index")->with("success", "Skill updated.");
     }
     public function destroy(Skill $skill) {
-        $skill->delete();
+        $skill->forceDelete();
         return redirect()->route("admin.skills.index")->with("success", "Skill deleted.");
     }
 }
